@@ -15,6 +15,22 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
   body{background:linear-gradient(135deg,#fff8f0 0%,#ffe8e8 100%);color:var(--dark);min-height:100vh;}
+  @keyframes pageFadeIn{
+    from {opacity:0; transform:translateY(12px);}
+    to {opacity:1; transform:translateY(0);}
+  }
+  @keyframes cartFadeIn{
+    from {opacity:0; transform:translateX(30px);}
+    to {opacity:1; transform:translateX(0);}
+  }
+  @keyframes overlayFadeIn{
+    from {opacity:0;}
+    to {opacity:1;}
+  }
+  @keyframes modalFadeIn{
+    from {opacity:0;transform:translateY(12px) scale(0.98);}
+    to {opacity:1;transform:translateY(0) scale(1);}
+  }
   
   /* NAVBAR */
   nav{
@@ -50,15 +66,21 @@
     font-size:14px;
   }
   nav button:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 4px 12px rgba(255,94,94,0.5);}
-  nav .cart-btn{background:var(--accent);position:relative;}
-  #cartCount{
-    position:absolute;top:-8px;right:-8px;
-    background:var(--primary);color:white;
-    border-radius:50%;width:22px;height:22px;
-    font-size:12px;display:flex;align-items:center;justify-content:center;
-    font-weight:900;
-  }
   .admin-link{background:none!important;color:#aaa!important;font-size:12px!important;text-decoration:underline;}
+
+  .floating-cart-btn{
+    position:fixed;right:24px;bottom:24px;z-index:150;
+    background:var(--accent);color:white;border:none;
+    width:64px;height:64px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;cursor:pointer;box-shadow:var(--shadow);
+  }
+  .floating-cart-btn span{
+    position:absolute;top:-6px;right:-4px;
+    background:var(--primary);color:white;border-radius:50%;
+    width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:900;
+  }
 
   /* HERO */
   .hero{
@@ -128,16 +150,18 @@
   /* CART DRAWER */
   .drawer-overlay{
     position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;
-    display:none;
+    display:none;opacity:0;transition:opacity 0.35s ease;
   }
-  .drawer-overlay.open{display:block;}
+  .drawer-overlay.open{
+    display:block;opacity:1;animation:overlayFadeIn 0.35s ease;
+  }
   .drawer{
     position:fixed;top:0;right:-420px;width:380px;max-width:90vw;height:100%;
-    background:white;z-index:201;transition:right 0.3s ease;
-    box-shadow:-8px 0 24px rgba(0,0,0,0.2);
+    background:white;z-index:201;transition:right 0.3s ease, opacity 0.35s ease, transform 0.35s ease;
+    box-shadow:-8px 0 24px rgba(0,0,0,0.2);opacity:0;transform:translateX(30px);
     display:flex;flex-direction:column;
   }
-  .drawer.open{right:0;}
+  .drawer.open{right:0;opacity:1;transform:translateX(0);animation:cartFadeIn 0.35s ease;}
   .drawer-header{
     padding:20px;background:var(--dark);color:white;
     display:flex;justify-content:space-between;align-items:center;
@@ -173,6 +197,7 @@
     display:none;align-items:center;justify-content:center;padding:20px;
   }
   .modal-overlay.open{display:flex;}
+  #checkoutModal.open .modal{animation:modalFadeIn 0.3s ease both;}
   .modal{
     background:white;border-radius:20px;padding:30px;max-width:420px;width:100%;
     box-shadow:var(--shadow);position:relative;
@@ -188,9 +213,22 @@
     padding:14px;border-radius:12px;font-weight:800;cursor:pointer;font-size:15px;
   }
   .modal .close-x{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#999;}
+  .coupon-box{margin:14px 0 18px;background:#fffaf5;border:1px solid #f0e2d8;border-radius:12px;padding:12px;}
+  .coupon-row{display:flex;gap:8px;}
+  .coupon-row input{flex:1;margin-bottom:0;}
+  .coupon-btn{background:var(--dark);color:white;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;}
+  .coupon-message{font-size:12px;margin-top:8px;min-height:18px;}
+  .coupon-message.success{color:var(--accent);font-weight:700;}
+  .coupon-message.error{color:var(--primary);font-weight:700;}
+  .discount-summary{display:grid;gap:6px;margin:12px 0 16px;color:#555;font-size:14px;}
+  .discount-summary .line{display:flex;justify-content:space-between;}
+  .discount-summary .total{font-size:18px;font-weight:900;color:var(--dark);}
   .error-msg{color:var(--primary);font-size:13px;margin-bottom:10px;display:none;}
 
   /* ADMIN DASHBOARD */
+  #storeView, #adminView{
+    opacity:0;animation:pageFadeIn 0.75s ease forwards;
+  }
   #adminView{display:none;padding:20px;max-width:1100px;margin:0 auto;}
   .admin-header{
     display:flex;justify-content:space-between;align-items:center;
@@ -209,12 +247,27 @@
     background:white;border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:var(--shadow);
   }
   .admin-section h2{margin-bottom:16px;font-size:20px;}
-  .product-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .product-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  .field label{font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.04em;}
   .product-form input,.product-form select{padding:10px;border:2px solid #eee;border-radius:8px;}
+  #formImage{
+    border:2px solid #b9f1dc;border-radius:14px;background:#f1fff9;
+    color:#4f7064;cursor:pointer;padding:8px;
+  }
+  #formImage::file-selector-button{
+    background:var(--accent);color:white;border:none;border-radius:999px;
+    padding:9px 16px;margin-right:10px;font-weight:800;cursor:pointer;
+    transition:background 0.2s,transform 0.2s;
+  }
+  #formImage::file-selector-button:hover{background:#05b989;transform:translateY(-1px);}
   .product-form button{
-    grid-column:span 2;background:var(--accent);color:white;border:none;
+    grid-column:1 / -1;background:var(--accent);color:white;border:none;
     padding:12px;border-radius:10px;font-weight:700;cursor:pointer;
   }
+  .product-image{width:100%;height:120px;object-fit:cover;border-radius:12px;background:#fff7f0;}
+  .table-thumb{width:46px;height:46px;object-fit:cover;border-radius:10px;display:block;background:#fff7f0;}
   table{width:100%;border-collapse:collapse;font-size:14px;}
   th,td{text-align:left;padding:10px;border-bottom:1px solid #eee;}
   th{color:#888;font-size:12px;text-transform:uppercase;}
@@ -224,13 +277,39 @@
   }
   .edit-btn{background:var(--secondary);}
   .del-btn{background:var(--primary);color:white;}
+  .coupon-toggle{color:white;}
+  .coupon-toggle.enabled{background:var(--accent);}
+  .coupon-toggle.disabled{background:#999;}
+  .coupon-option{display:flex;align-items:center;justify-content:flex-start;gap:8px;grid-column:1 / -1;width:max-content;max-width:100%;color:#555;font-size:14px;font-weight:700;}
+  .coupon-option input{width:18px;height:18px;accent-color:var(--accent);}
+  .coupon-option input:disabled{opacity:0.55;}
+  .coupon-table-wrap{overflow-x:auto;margin:0 -4px;}
+  .coupon-table{min-width:680px;}
+  .coupon-table .table-actions{white-space:nowrap;}
   .stock-badge{padding:3px 8px;border-radius:8px;font-size:11px;font-weight:800;}
   .stock-in{background:#d4f7e8;color:#06945f;}
   .stock-out{background:#ffe0e0;color:#d63333;}
 
+  .faq-section{max-width:1100px;margin:0 auto 48px;padding:0 20px;}
+  .faq-box{background:white;border-radius:18px;padding:24px;box-shadow:var(--shadow);}
+  .faq-box h2{margin-bottom:18px;font-size:28px;}
+  .faq-list{display:grid;gap:14px;}
+  .faq-item{border:1px solid #f0e2d8;background:#fffaf5;border-radius:12px;padding:14px 18px;}
+  .faq-question{font-weight:800;margin-bottom:6px;color:var(--dark);}
+  .faq-answer{color:#555;line-height:1.6;}
+
+  .faq-admin-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .faq-admin-form textarea{min-height:90px;resize:vertical;}
+  .faq-admin-form input,.faq-admin-form textarea{width:100%;padding:10px;border:2px solid #eee;border-radius:8px;}
+  .faq-admin-form button{grid-column:1 / -1;background:var(--accent);color:white;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;}
+  .remove-image-btn{
+    background:#fff1f1;color:var(--primary);border:1px solid #ffd7d7;
+    padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700;
+  }
+
   @media(max-width:600px){
-    .product-form{grid-template-columns:1fr;}
-    .product-form button{grid-column:span 1;}
+    .product-form,.faq-admin-form{grid-template-columns:1fr;}
+    .product-form button,.faq-admin-form button{grid-column:span 1;}
   }
 </style>
 </head>
@@ -238,9 +317,8 @@
 
 <!-- NAVBAR -->
 <nav>
-  <div class="logo" onclick="showStore()">🍿 SnackHub</div>
+  <div class="logo" onclick="showStore()">🍿 Snaxify</div>
   <div class="nav-right">
-    <button class="cart-btn" onclick="openCart()">🛒 Cart <span id="cartCount">0</span></button>
     <button class="admin-link" onclick="openLoginModal()">Admin</button>
   </div>
 </nav>
@@ -249,14 +327,23 @@
 <div id="storeView">
   <div class="hero">
     <h1>Snacks That Slap 🔥</h1>
-    <p>Fuel your grind between classes — order now, pick up at break</p>
+    <p>Fuel your grind between classes order now, pick up at break</p>
   </div>
 
   <div class="container">
     <div class="filters" id="filterBar"></div>
     <div class="grid" id="productGrid"></div>
   </div>
+
+  <div class="faq-section">
+    <div class="faq-box">
+      <h2>❓ FAQ</h2>
+      <div class="faq-list" id="faqList"></div>
+    </div>
+  </div>
 </div>
+
+<button class="floating-cart-btn" onclick="openCart()">🛒<span id="floatingCartCount">0</span></button>
 
 <!-- ADMIN VIEW -->
 <div id="adminView">
@@ -273,22 +360,92 @@
   </div>
 
   <div class="admin-section">
-    <h2>➕ Add / Edit Product</h2>
+    <h2>➕ Add / Edit Item</h2>
     <div class="product-form">
       <input type="hidden" id="editId">
-      <input type="text" id="formName" placeholder="Snack name">
-      <input type="text" id="formEmoji" placeholder="Emoji (e.g. 🍫)">
-      <input type="number" id="formPrice" placeholder="Price (e.g. 1.50)" step="0.01">
-      <input type="number" id="formStock" placeholder="Stock qty">
-      <select id="formCategory">
-        <option value="Sweet">Sweet</option>
-        <option value="Salty">Salty</option>
-        <option value="Drink">Drink</option>
-        <option value="Healthy">Healthy</option>
-      </select>
-      <input type="text" id="formDesc" placeholder="Short description">
-      <button onclick="saveProduct()">Save Product</button>
+
+      <div class="field">
+        <label for="formName">Name</label>
+        <input type="text" id="formName" placeholder="Snack name">
+      </div>
+
+      <div class="field">
+        <label for="formCategory">Category</label>
+        <select id="formCategory">
+          <option value="Sweet">Sweet</option>
+          <option value="Salty">Salty</option>
+          <option value="Drink">Drink</option>
+          <option value="Healthy">Healthy</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="formPrice">Price (AED)</label>
+        <input type="number" id="formPrice" placeholder="e.g. 12.50" step="0.01">
+      </div>
+
+      <div class="field">
+        <label for="formStock">Stock</label>
+        <input type="number" id="formStock" placeholder="Qty">
+      </div>
+
+      <div class="field full">
+        <label for="formImage">Custom image</label>
+        <input type="file" id="formImage" accept="image/*">
+      </div>
+
+      <div class="field full">
+        <label for="formImageUrl">Or paste image URL</label>
+        <input type="text" id="formImageUrl" placeholder="https://example.com/image.jpg">
+      </div>
+
+      <div class="field full" id="removeImageField" style="display:none;">
+        <button class="remove-image-btn" type="button" onclick="removeCurrentImage()">Remove current image</button>
+      </div>
+
+      <div class="field full">
+        <label for="formEmoji">Emoji fallback</label>
+        <input type="text" id="formEmoji" placeholder="Emoji (e.g. 🍫)">
+      </div>
+
+      <div class="field full">
+        <label for="formDesc">Description</label>
+        <input type="text" id="formDesc" placeholder="Short description">
+      </div>
+
+      <button onclick="saveProduct()">Save Item</button>
     </div>
+  </div>
+
+  <div class="admin-section" id="couponManager">
+    <h2>🎟️ Coupon Manager</h2>
+    <div class="faq-admin-form">
+      <input type="hidden" id="couponEditId">
+      <input type="text" id="couponCode" placeholder="Coupon code">
+      <input type="number" id="couponPercent" placeholder="Discount %" min="1" max="100" step="1">
+      <label class="coupon-option"><input type="checkbox" id="couponWaivesShipping" onchange="updateCouponDiscountField()"> Waive shipping fee (no percentage discount)</label>
+      <button onclick="saveCoupon()">Save Coupon</button>
+    </div>
+    <div class="coupon-table-wrap">
+    <table class="coupon-table">
+      <thead><tr><th>Code</th><th>Discount</th><th>Shipping</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="couponTable"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="admin-section">
+    <h2>❓ FAQ Manager</h2>
+    <div class="faq-admin-form">
+      <input type="hidden" id="faqEditId">
+      <input type="text" id="faqQuestion" placeholder="Question">
+      <input type="text" id="faqAnswer" placeholder="Answer">
+      <button onclick="saveFaq()">Save FAQ</button>
+    </div>
+    <table>
+      <thead><tr><th>Question</th><th>Answer</th><th>Actions</th></tr></thead>
+      <tbody id="faqTable"></tbody>
+    </table>
   </div>
 
   <div class="admin-section">
@@ -329,6 +486,23 @@
     <h2>🎉 Confirm Order</h2>
     <input type="text" id="checkoutName" placeholder="Your name">
     <input type="text" id="checkoutClass" placeholder="Class / Homeroom">
+
+    <div class="coupon-box">
+      <label for="checkoutCoupon">Coupon code</label>
+      <div class="coupon-row">
+        <input type="text" id="checkoutCoupon" placeholder="Enter code">
+        <button class="coupon-btn" onclick="applyCoupon()">Apply</button>
+      </div>
+      <div id="couponMessage" class="coupon-message"></div>
+    </div>
+
+    <div class="discount-summary">
+      <div class="line"><span>Subtotal</span><span id="checkoutSubtotal">AED 0.00</span></div>
+      <div class="line"><span>Discount</span><span id="checkoutDiscount">- AED 0.00</span></div>
+      <div class="line"><span>Shipping</span><span id="checkoutShipping">AED 1.00</span></div>
+      <div class="line total"><span>Total</span><span id="checkoutTotal">AED 0.00</span></div>
+    </div>
+
     <button class="submit" onclick="placeOrder()">Place Order</button>
   </div>
 </div>
@@ -369,8 +543,23 @@ let products = JSON.parse(localStorage.getItem('sh_products')) || [
 ];
 let orders = JSON.parse(localStorage.getItem('sh_orders')) || [];
 let cart = JSON.parse(localStorage.getItem('sh_cart')) || [];
+let faqs = JSON.parse(localStorage.getItem('sh_faqs')) || [
+  {id:1, question:'How do you deliver?', answer:'We deliver straight to your class in break.'},
+  {id:2, question:'Can I order in advance?', answer:'Yes — place your order before break and we will get it ready for you.'},
+  {id:3, question:'Do you offer specials?', answer:'Absolutely — keep an eye out for our daily snack deals and bundles.'}
+];
+let coupons = (JSON.parse(localStorage.getItem('sh_coupons')) || [
+  {id:1, code:'SAVE10', percent:10},
+  {id:2, code:'FREESHIP', percent:5}
+]).map(coupon => ({
+  ...coupon,
+  enabled: coupon.enabled !== false,
+  waivesShipping: coupon.waivesShipping === true
+}));
+let activeCouponCode = '';
 let activeFilter = "All";
 let isLoggedIn = false;
+const SHIPPING_FEE = 1;
 
 const formatCurrency = (value) => new Intl.NumberFormat('en-AE', {
   style: 'currency',
@@ -382,6 +571,8 @@ function saveState(){
   localStorage.setItem('sh_products', JSON.stringify(products));
   localStorage.setItem('sh_orders', JSON.stringify(orders));
   localStorage.setItem('sh_cart', JSON.stringify(cart));
+  localStorage.setItem('sh_faqs', JSON.stringify(faqs));
+  localStorage.setItem('sh_coupons', JSON.stringify(coupons));
 }
 
 /* ============ STORE RENDER ============ */
@@ -399,7 +590,9 @@ function renderStore(){
   document.getElementById('productGrid').innerHTML = list.map(p => `
     <div class="card ${p.stock<=0?'out-of-stock':''}">
       ${p.stock>0 && p.stock<=5 ? '<div class="badge">Low Stock!</div>':''}
-      <div class="emoji-banner">${p.emoji}</div>
+      <div class="emoji-banner">
+        ${p.image ? `<img class="product-image" src="${p.image}" alt="${p.name}">` : p.emoji}
+      </div>
       <div class="card-body">
         <h3>${p.name}</h3>
         <div class="desc">${p.desc}</div>
@@ -423,7 +616,6 @@ function addToCart(id){
   else cart.push({id, qty:1});
   saveState();
   renderCart();
-  openCart();
 }
 function changeQty(id, delta){
   const item = cart.find(c=>c.id===id);
@@ -440,9 +632,30 @@ function removeItem(id){
   saveState();
   renderCart();
 }
+function getCartSubtotal(){
+  return cart.reduce((sum, c) => {
+    const p = products.find(x => x.id === c.id);
+    return sum + (p ? p.price * c.qty : 0);
+  }, 0);
+}
+function getCouponByCode(code){
+  const normalized = (code || '').trim().toUpperCase();
+  return coupons.find(c => c.enabled && c.code.toUpperCase() === normalized) || null;
+}
+function getDiscountSummary(){
+  const subtotal = getCartSubtotal();
+  const coupon = activeCouponCode ? getCouponByCode(activeCouponCode) : null;
+  const discount = coupon ? subtotal * (coupon.percent / 100) : 0;
+  const shipping = coupon && coupon.waivesShipping ? 0 : SHIPPING_FEE;
+  const total = Math.max(subtotal - discount + shipping, 0);
+  return { subtotal, discount, shipping, total, coupon };
+}
 function renderCart(){
   const totalQty = cart.reduce((s,c)=>s+c.qty,0);
-  document.getElementById('cartCount').textContent = totalQty;
+  const cartBadge = document.getElementById('cartCount');
+  const floatingCartBadge = document.getElementById('floatingCartCount');
+  if(cartBadge) cartBadge.textContent = totalQty;
+  if(floatingCartBadge) floatingCartBadge.textContent = totalQty;
 
   if(cart.length===0){
     document.getElementById('cartItems').innerHTML = '<div class="empty-cart">Cart\'s empty rn 🥲<br>go add some snacks!</div>';
@@ -475,11 +688,24 @@ function renderCart(){
       </div>
     `;
   }).join('');
-  document.getElementById('cartTotal').textContent = formatCurrency(total);
+  const { total: cartTotal } = getDiscountSummary();
+  document.getElementById('cartTotal').textContent = formatCurrency(cartTotal);
+}
+function triggerViewFade(elementId){
+  const el = document.getElementById(elementId);
+  if(!el) return;
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'pageFadeIn 0.7s ease forwards';
 }
 function openCart(){
-  document.getElementById('cartDrawer').classList.add('open');
-  document.getElementById('drawerOverlay').classList.add('open');
+  const drawer = document.getElementById('cartDrawer');
+  const overlay = document.getElementById('drawerOverlay');
+  drawer.classList.add('open');
+  overlay.classList.add('open');
+  drawer.style.animation = 'none';
+  void drawer.offsetWidth;
+  drawer.style.animation = 'cartFadeIn 0.35s ease';
 }
 function closeCart(){
   document.getElementById('cartDrawer').classList.remove('open');
@@ -487,14 +713,58 @@ function closeCart(){
 }
 
 /* ============ CHECKOUT ============ */
+function updateCheckoutSummary(){
+  const subtotalEl = document.getElementById('checkoutSubtotal');
+  const discountEl = document.getElementById('checkoutDiscount');
+  const shippingEl = document.getElementById('checkoutShipping');
+  const totalEl = document.getElementById('checkoutTotal');
+  const { subtotal, discount, shipping, total } = getDiscountSummary();
+
+  if(subtotalEl) subtotalEl.textContent = formatCurrency(subtotal);
+  if(discountEl) discountEl.textContent = `- ${formatCurrency(discount)}`;
+  if(shippingEl) shippingEl.textContent = formatCurrency(shipping);
+  if(totalEl) totalEl.textContent = formatCurrency(total);
+}
+function applyCoupon(){
+  const code = document.getElementById('checkoutCoupon').value;
+  const message = document.getElementById('couponMessage');
+  const coupon = getCouponByCode(code);
+
+  if(!coupon){
+    activeCouponCode = '';
+    if(message){
+      message.textContent = 'Invalid coupon code.';
+      message.className = 'coupon-message error';
+    }
+    updateCheckoutSummary();
+    return;
+  }
+
+  activeCouponCode = coupon.code;
+  if(message){
+    message.textContent = coupon.waivesShipping
+      ? `${coupon.code} applied: shipping fee waived!`
+      : `${coupon.code} applied: ${coupon.percent}% off!`;
+    message.className = 'coupon-message success';
+  }
+  updateCheckoutSummary();
+}
 function openCheckoutModal(){
   if(cart.length===0) return;
   document.getElementById('checkoutModal').classList.add('open');
+  document.getElementById('checkoutCoupon').value = activeCouponCode;
+  updateCheckoutSummary();
 }
 function placeOrder(){
   const name = document.getElementById('checkoutName').value.trim();
   const cls = document.getElementById('checkoutClass').value.trim();
+  const coupon = activeCouponCode ? getCouponByCode(activeCouponCode) : null;
   if(!name){ alert("Yo, put your name in first 🙏"); return; }
+
+  const subtotal = getCartSubtotal();
+  const discount = coupon ? subtotal * (coupon.percent / 100) : 0;
+  const shipping = coupon && coupon.waivesShipping ? 0 : SHIPPING_FEE;
+  const finalTotal = Math.max(subtotal - discount + shipping, 0);
 
   let total = 0;
   const itemSummary = cart.map(c=>{
@@ -506,11 +776,13 @@ function placeOrder(){
 
   orders.unshift({
     orderNum: 'ORD-' + Math.floor(1000+Math.random()*9000),
-    name, cls, items: itemSummary, total,
+    name, cls, items: itemSummary, total: finalTotal,
+    discount, shipping, couponCode: coupon ? coupon.code : null,
     time: new Date().toLocaleString()
   });
 
   cart = [];
+  activeCouponCode = '';
   saveState();
   renderStore();
   renderCart();
@@ -518,6 +790,9 @@ function placeOrder(){
   closeCart();
   document.getElementById('checkoutName').value='';
   document.getElementById('checkoutClass').value='';
+  document.getElementById('checkoutCoupon').value='';
+  document.getElementById('couponMessage').textContent='';
+  document.getElementById('couponMessage').className='coupon-message';
   alert(`Order placed! 🔥 See you at pickup, ${name}!`);
 }
 
@@ -549,16 +824,56 @@ function logout(){
 function showStore(){
   document.getElementById('storeView').style.display='block';
   document.getElementById('adminView').style.display='none';
+  triggerViewFade('storeView');
   renderStore();
   renderCart();
 }
 function showAdmin(){
   document.getElementById('storeView').style.display='none';
   document.getElementById('adminView').style.display='block';
+  triggerViewFade('adminView');
   renderAdmin();
 }
 
 /* ============ ADMIN LOGIC ============ */
+function renderFaq(){
+  document.getElementById('faqList').innerHTML = faqs.map(faq => `
+    <div class="faq-item">
+      <div class="faq-question">${faq.question}</div>
+      <div class="faq-answer">${faq.answer}</div>
+    </div>
+  `).join('');
+}
+
+function renderFaqAdmin(){
+  document.getElementById('faqTable').innerHTML = faqs.map(faq => `
+    <tr>
+      <td>${faq.question}</td>
+      <td>${faq.answer}</td>
+      <td class="table-actions">
+        <button class="edit-btn" onclick="editFaq(${faq.id})">Edit</button>
+        <button class="del-btn" onclick="deleteFaq(${faq.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="3" style="text-align:center;color:#999;">No FAQs yet</td></tr>';
+}
+
+function renderCouponAdmin(){
+  document.getElementById('couponTable').innerHTML = coupons.map(coupon => `
+    <tr>
+      <td>${coupon.code}</td>
+      <td>${coupon.waivesShipping ? 'Shipping only' : `${coupon.percent}%`}</td>
+      <td>${coupon.waivesShipping ? 'Waived' : formatCurrency(SHIPPING_FEE)}</td>
+      <td>${coupon.enabled ? 'On' : 'Off'}</td>
+      <td class="table-actions">
+        <button class="coupon-toggle ${coupon.enabled ? 'enabled' : 'disabled'}" onclick="toggleCoupon(${coupon.id})">${coupon.enabled ? 'Turn off' : 'Turn on'}</button>
+        <button class="edit-btn" onclick="editCoupon(${coupon.id})">Edit</button>
+        <button class="del-btn" onclick="deleteCoupon(${coupon.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" style="text-align:center;color:#999;">No coupons yet</td></tr>';
+}
+
 function renderAdmin(){
   document.getElementById('statProducts').textContent = products.length;
   document.getElementById('statOrders').textContent = orders.length;
@@ -567,7 +882,7 @@ function renderAdmin(){
 
   document.getElementById('productTable').innerHTML = products.map(p=>`
     <tr>
-      <td>${p.emoji} ${p.name}</td>
+      <td>${p.image ? `<img class="table-thumb" src="${p.image}" alt="${p.name}">` : p.emoji} ${p.name}</td>
       <td>${p.category}</td>
       <td>${formatCurrency(p.price)}</td>
       <td><span class="stock-badge ${p.stock>0?'stock-in':'stock-out'}">${p.stock} left</span></td>
@@ -586,9 +901,156 @@ function renderAdmin(){
       <td>${o.time}</td>
     </tr>
   `).join('') || '<tr><td colspan="4" style="text-align:center;color:#999;">No orders yet</td></tr>';
+
+  renderCouponAdmin();
+  renderFaqAdmin();
 }
 
-function saveProduct(){
+function saveCoupon(){
+  const id = document.getElementById('couponEditId').value;
+  const code = document.getElementById('couponCode').value.trim();
+  const waivesShipping = document.getElementById('couponWaivesShipping').checked;
+  const percentInput = document.getElementById('couponPercent');
+  const enteredPercent = parseFloat(percentInput.value);
+  const percent = waivesShipping ? 0 : enteredPercent;
+
+  if(!code || (!waivesShipping && (isNaN(percent) || percent <= 0 || percent > 100))){
+    alert(waivesShipping
+      ? 'Enter a coupon code.'
+      : 'Enter a valid coupon code and a discount between 1% and 100%.');
+    return;
+  }
+
+  const normalizedCode = code.toUpperCase();
+  if(id){
+    const coupon = coupons.find(c=>c.id===parseInt(id));
+    if(coupon){
+      coupon.code = normalizedCode;
+      coupon.percent = percent;
+      coupon.waivesShipping = waivesShipping;
+    }
+  } else {
+    const existing = coupons.some(c => c.code.toUpperCase() === normalizedCode);
+    if(existing){
+      alert('That coupon code already exists.');
+      return;
+    }
+    const newId = coupons.length ? Math.max(...coupons.map(c=>c.id))+1 : 1;
+    coupons.push({id:newId, code: normalizedCode, percent, enabled:true, waivesShipping});
+  }
+
+  saveState();
+  renderCouponAdmin();
+  clearCouponForm();
+}
+function toggleCoupon(id){
+  const coupon = coupons.find(c=>c.id===id);
+  if(!coupon) return;
+  coupon.enabled = !coupon.enabled;
+  if(!coupon.enabled && activeCouponCode === coupon.code){
+    activeCouponCode = '';
+    document.getElementById('checkoutCoupon').value = '';
+    document.getElementById('couponMessage').textContent = '';
+    document.getElementById('couponMessage').className = 'coupon-message';
+  }
+  saveState();
+  renderCouponAdmin();
+  updateCheckoutSummary();
+}
+function editCoupon(id){
+  const coupon = coupons.find(c=>c.id===id);
+  if(!coupon) return;
+  document.getElementById('couponEditId').value = coupon.id;
+  document.getElementById('couponCode').value = coupon.code;
+  document.getElementById('couponPercent').value = coupon.percent;
+  document.getElementById('couponWaivesShipping').checked = coupon.waivesShipping === true;
+  updateCouponDiscountField();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function deleteCoupon(id){
+  if(!confirm('Delete this coupon?')) return;
+  coupons = coupons.filter(c=>c.id!==id);
+  if(activeCouponCode && getCouponByCode(activeCouponCode) === null){
+    activeCouponCode = '';
+    document.getElementById('checkoutCoupon').value = '';
+    document.getElementById('couponMessage').textContent = '';
+    document.getElementById('couponMessage').className = 'coupon-message';
+  }
+  saveState();
+  renderCouponAdmin();
+  clearCouponForm();
+  updateCheckoutSummary();
+}
+function clearCouponForm(){
+  document.getElementById('couponEditId').value='';
+  document.getElementById('couponCode').value='';
+  document.getElementById('couponPercent').value='';
+  document.getElementById('couponWaivesShipping').checked = false;
+  updateCouponDiscountField();
+}
+function updateCouponDiscountField(){
+  const waiver = document.getElementById('couponWaivesShipping').checked;
+  const percentInput = document.getElementById('couponPercent');
+  percentInput.disabled = waiver;
+  percentInput.required = !waiver;
+  if(waiver) percentInput.value = '';
+  percentInput.placeholder = waiver ? 'Shipping-only coupon' : 'Discount %';
+}
+function saveFaq(){
+  const id = document.getElementById('faqEditId').value;
+  const question = document.getElementById('faqQuestion').value.trim();
+  const answer = document.getElementById('faqAnswer').value.trim();
+
+  if(!question || !answer){
+    alert('Please fill in both the question and answer.');
+    return;
+  }
+
+  if(id){
+    const faq = faqs.find(f=>f.id===parseInt(id));
+    if(faq){ faq.question = question; faq.answer = answer; }
+  } else {
+    const newId = faqs.length ? Math.max(...faqs.map(f=>f.id))+1 : 1;
+    faqs.push({id:newId, question, answer});
+  }
+
+  saveState();
+  renderFaq();
+  renderFaqAdmin();
+  clearFaqForm();
+}
+function editFaq(id){
+  const faq = faqs.find(f=>f.id===id);
+  if(!faq) return;
+  document.getElementById('faqEditId').value = faq.id;
+  document.getElementById('faqQuestion').value = faq.question;
+  document.getElementById('faqAnswer').value = faq.answer;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function deleteFaq(id){
+  if(!confirm('Delete this FAQ item?')) return;
+  faqs = faqs.filter(f=>f.id!==id);
+  saveState();
+  renderFaq();
+  renderFaqAdmin();
+  clearFaqForm();
+}
+function clearFaqForm(){
+  document.getElementById('faqEditId').value='';
+  document.getElementById('faqQuestion').value='';
+  document.getElementById('faqAnswer').value='';
+}
+
+function fileToDataUrl(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Unable to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveProduct(){
   const id = document.getElementById('editId').value;
   const name = document.getElementById('formName').value.trim();
   const emoji = document.getElementById('formEmoji').value.trim() || '🍬';
@@ -596,20 +1058,42 @@ function saveProduct(){
   const stock = parseInt(document.getElementById('formStock').value);
   const category = document.getElementById('formCategory').value;
   const desc = document.getElementById('formDesc').value.trim();
+  const imageField = document.getElementById('formImageUrl');
+  const removeField = document.getElementById('removeImageField');
+  const removeImage = removeField.dataset.remove === 'true' && !imageField.value.trim() && !document.getElementById('formImage').files[0];
+  let image = document.getElementById('formImageUrl').value.trim();
+  const imageFile = document.getElementById('formImage').files[0];
 
   if(!name || isNaN(price) || isNaN(stock)){
     alert("Fill out name, price, and stock at least 🙏");
     return;
   }
 
+  if(imageFile) {
+    try {
+      image = await fileToDataUrl(imageFile);
+    } catch (error) {
+      alert('Could not upload the selected image. Please try again.');
+      return;
+    }
+  }
+
+  const itemData = {name, emoji, price, stock, category, desc};
+  if(image) {
+    itemData.image = image;
+  }
+
   if(id){
     const p = products.find(x=>x.id===parseInt(id));
-    Object.assign(p, {name, emoji, price, stock, category, desc});
+    Object.assign(p, itemData);
+    if(removeImage) delete p.image;
   } else {
     const newId = products.length ? Math.max(...products.map(p=>p.id))+1 : 1;
-    products.push({id:newId, name, emoji, price, stock, category, desc});
+    products.push({id:newId, ...itemData});
   }
+
   saveState();
+  renderStore();
   clearForm();
   renderAdmin();
 }
@@ -617,27 +1101,47 @@ function editProduct(id){
   const p = products.find(x=>x.id===id);
   document.getElementById('editId').value = p.id;
   document.getElementById('formName').value = p.name;
-  document.getElementById('formEmoji').value = p.emoji;
+  document.getElementById('formEmoji').value = p.emoji || '';
   document.getElementById('formPrice').value = p.price;
   document.getElementById('formStock').value = p.stock;
   document.getElementById('formCategory').value = p.category;
-  document.getElementById('formDesc').value = p.desc;
+  document.getElementById('formDesc').value = p.desc || '';
+  document.getElementById('formImageUrl').value = p.image || '';
+  document.getElementById('formImage').value = '';
+  const removeField = document.getElementById('removeImageField');
+  removeField.dataset.remove = p.image ? 'false' : 'true';
+  removeField.style.display = p.image ? 'block' : 'none';
   window.scrollTo({top:0, behavior:'smooth'});
+}
+function removeCurrentImage(){
+  const removeField = document.getElementById('removeImageField');
+  removeField.dataset.remove = 'true';
+  document.getElementById('formImageUrl').value = '';
+  document.getElementById('formImage').value = '';
 }
 function deleteProduct(id){
   if(!confirm("For real delete this one?")) return;
   products = products.filter(p=>p.id!==id);
   saveState();
+  renderStore();
   renderAdmin();
 }
 function clearForm(){
   document.getElementById('editId').value='';
-  ['formName','formEmoji','formPrice','formStock','formDesc'].forEach(i=>document.getElementById(i).value='');
+  ['formName','formEmoji','formPrice','formStock','formDesc','formImageUrl'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('formImage').value='';
+  const removeField = document.getElementById('removeImageField');
+  removeField.dataset.remove = 'false';
+  removeField.style.display = 'none';
+  document.getElementById('formCategory').value = 'Sweet';
 }
 
 /* ============ INIT ============ */
 renderStore();
+renderFaq();
 renderCart();
+renderFaqAdmin();
+updateCouponDiscountField();
 </script>
 </body>
 </html>
