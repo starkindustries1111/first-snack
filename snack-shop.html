@@ -6,15 +6,18 @@
 <title>SnackHub 🍿</title>
 <style>
   :root{
-    --primary:#ff5e5e;
-    --secondary:#ffd166;
-    --accent:#06d6a0;
-    --dark:#1a1a2e;
-    --light:#fff8f0;
-    --shadow: 0 8px 24px rgba(0,0,0,0.15);
+    --primary:#c96857;
+    --secondary:#d9bd79;
+    --accent:#5c927f;
+    --dark:#2d4039;
+    --light:#f5f2ea;
+    --surface:#fffdf8;
+    --muted:#6e7872;
+    --line:#e8e4da;
+    --shadow:0 10px 28px rgba(45,64,57,0.08);
   }
-  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
-  body{background:linear-gradient(135deg,#fff8f0 0%,#ffe8e8 100%);color:var(--dark);min-height:100vh;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Avenir Next','Trebuchet MS',sans-serif;}
+  body{background:var(--light);color:var(--dark);min-height:100vh;}
   @keyframes pageFadeIn{
     from {opacity:0; transform:translateY(12px);}
     to {opacity:1; transform:translateY(0);}
@@ -31,23 +34,35 @@
     from {opacity:0;transform:translateY(12px) scale(0.98);}
     to {opacity:1;transform:translateY(0) scale(1);}
   }
+  @keyframes toastFadeIn{
+    from {opacity:0;transform:translate(-50%,16px);}
+    to {opacity:1;transform:translate(-50%,0);}
+  }
+  @keyframes successFadeIn{
+    from {opacity:0;transform:translateY(12px) scale(0.96);}
+    to {opacity:1;transform:translateY(0) scale(1);}
+  }
+  @keyframes checkDraw{
+    from {stroke-dashoffset:48;}
+    to {stroke-dashoffset:0;}
+  }
   
   /* NAVBAR */
   nav{
-    background:var(--dark);
-    padding:16px 24px;
+    background:var(--surface);
+    padding:18px 32px;
     display:flex;
     justify-content:space-between;
     align-items:center;
     position:sticky;
     top:0;
     z-index:100;
-    box-shadow:var(--shadow);
+    border-bottom:1px solid var(--line);
   }
   nav .logo{
-    font-size:24px;
+    font-size:22px;
     font-weight:900;
-    color:var(--secondary);
+    color:var(--dark);
     display:flex;
     align-items:center;
     gap:8px;
@@ -55,57 +70,63 @@
   }
   nav .nav-right{display:flex;align-items:center;gap:16px;}
   nav button{
-    background:var(--primary);
+    background:var(--dark);
     color:white;
     border:none;
-    padding:10px 20px;
-    border-radius:30px;
+    padding:10px 18px;
+    border-radius:10px;
     font-weight:700;
     cursor:pointer;
-    transition:transform 0.2s, box-shadow 0.2s;
+    transition:background 0.2s, transform 0.2s;
     font-size:14px;
   }
-  nav button:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 4px 12px rgba(255,94,94,0.5);}
-  .admin-link{background:none!important;color:#aaa!important;font-size:12px!important;text-decoration:underline;}
+  nav button:hover{background:var(--accent);transform:translateY(-1px);}
+  .admin-link{background:transparent!important;color:var(--muted)!important;font-size:13px!important;text-decoration:none;}
 
   .floating-cart-btn{
-    position:fixed;right:24px;bottom:24px;z-index:150;
+    position:fixed;right:28px;bottom:28px;z-index:150;
     background:var(--accent);color:white;border:none;
-    width:64px;height:64px;border-radius:50%;
+    width:60px;height:60px;border-radius:16px;
     display:flex;align-items:center;justify-content:center;
-    font-size:24px;cursor:pointer;box-shadow:var(--shadow);
+    font-size:22px;cursor:pointer;box-shadow:var(--shadow);transition:transform 0.2s,background 0.2s;
   }
+  .floating-cart-btn:hover{background:var(--dark);transform:translateY(-3px);}
   .floating-cart-btn span{
     position:absolute;top:-6px;right:-4px;
-    background:var(--primary);color:white;border-radius:50%;
+    background:var(--primary);color:white;border-radius:8px;
     width:24px;height:24px;display:flex;align-items:center;justify-content:center;
     font-size:12px;font-weight:900;
   }
 
   /* HERO */
   .hero{
-    text-align:center;
-    padding:60px 20px 40px;
+    text-align:left;max-width:1200px;margin:0 auto;
+    padding:68px 20px 42px;
   }
   .hero h1{
-    font-size:clamp(32px,6vw,56px);
+    font-size:clamp(34px,5vw,54px);
     font-weight:900;
-    background:linear-gradient(90deg,var(--primary),var(--secondary));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    margin-bottom:12px;
+    color:var(--dark);letter-spacing:-0.02em;margin-bottom:12px;
   }
-  .hero p{font-size:18px;color:#555;font-weight:500;}
+  .hero p{font-size:17px;color:var(--muted);font-weight:500;max-width:540px;line-height:1.6;}
+  .flash-sale-banner{
+    max-width:1160px;margin:0 auto 34px;padding:16px 20px;
+    background:#f1e5c5;border:1px solid #dfc989;border-radius:12px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    color:#5d4a22;
+  }
+  .flash-sale-banner[hidden]{display:none;}
+  .flash-sale-banner strong{font-size:18px;}
+  .flash-sale-banner span{font-size:13px;color:#76643b;}
 
   /* PRODUCT GRID */
   .container{max-width:1200px;margin:0 auto;padding:0 20px 60px;}
   .filters{
-    display:flex;gap:10px;justify-content:center;margin-bottom:30px;flex-wrap:wrap;
+    display:flex;gap:8px;justify-content:flex-start;margin-bottom:24px;flex-wrap:wrap;
   }
   .filter-btn{
-    background:white;border:2px solid #eee;padding:8px 18px;border-radius:20px;
-    cursor:pointer;font-weight:700;font-size:14px;transition:0.2s;
+    background:transparent;border:1px solid #d9ded8;padding:9px 16px;border-radius:999px;
+    cursor:pointer;font-weight:700;font-size:13px;color:var(--muted);transition:0.2s;
   }
   .filter-btn.active,.filter-btn:hover{background:var(--dark);color:white;border-color:var(--dark);}
 
@@ -115,41 +136,46 @@
     gap:24px;
   }
   .card{
-    background:white;
-    border-radius:20px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
     overflow:hidden;
     box-shadow:var(--shadow);
-    transition:transform 0.25s, box-shadow 0.25s;
+    transition:transform 0.25s, box-shadow 0.25s, border-color 0.25s;
     position:relative;
   }
-  .card:hover{transform:translateY(-8px) rotate(-1deg);box-shadow:0 16px 32px rgba(0,0,0,0.2);}
+  .card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(45,64,57,0.12);border-color:#d4dcd5;}
   .card .emoji-banner{
-    font-size:70px;text-align:center;padding:24px 0;
-    background:linear-gradient(135deg,var(--secondary),#ffedb0);
+    font-size:68px;text-align:center;padding:24px 0;background:#f1eadb;
   }
+  .card:nth-child(2n) .emoji-banner{background:#e7f0eb;}
+  .card:nth-child(3n) .emoji-banner{background:#f4e4dc;}
   .card .badge{
     position:absolute;top:12px;left:12px;
     background:var(--accent);color:white;font-size:11px;font-weight:800;
-    padding:4px 10px;border-radius:12px;
+    padding:5px 10px;border-radius:8px;
   }
   .card-body{padding:16px;}
-  .card-body h3{font-size:18px;margin-bottom:4px;}
-  .card-body .desc{font-size:13px;color:#888;margin-bottom:10px;min-height:32px;}
+  .card-body h3{font-size:18px;margin-bottom:6px;}
+  .card-body .desc{font-size:13px;color:var(--muted);margin-bottom:14px;min-height:32px;line-height:1.45;}
   .card-body .price-row{
     display:flex;justify-content:space-between;align-items:center;
   }
-  .price{font-size:20px;font-weight:900;color:var(--primary);}
+  .price{font-size:19px;font-weight:900;color:var(--primary);}
+  .price.on-sale{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+  .price-was{font-size:12px;font-weight:600;color:var(--muted);text-decoration:line-through;}
+  .price-now{font-size:19px;font-weight:900;color:var(--primary);}
   .add-btn{
-    background:var(--dark);color:white;border:none;padding:8px 16px;
-    border-radius:12px;font-weight:700;cursor:pointer;transition:0.2s;
+    background:var(--dark);color:white;border:none;padding:9px 15px;
+    border-radius:9px;font-weight:700;cursor:pointer;transition:0.2s;
   }
-  .add-btn:hover{background:var(--primary);}
-  .add-btn:disabled{background:#ccc;cursor:not-allowed;}
+  .add-btn:hover{background:var(--accent);}
+  .add-btn:disabled{background:#c7ccc8;cursor:not-allowed;}
   .out-of-stock{opacity:0.5;}
 
   /* CART DRAWER */
   .drawer-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;
+    position:fixed;inset:0;background:rgba(45,64,57,0.32);z-index:200;
     display:none;opacity:0;transition:opacity 0.35s ease;
   }
   .drawer-overlay.open{
@@ -158,12 +184,12 @@
   .drawer{
     position:fixed;top:0;right:-420px;width:380px;max-width:90vw;height:100%;
     background:white;z-index:201;transition:right 0.3s ease, opacity 0.35s ease, transform 0.35s ease;
-    box-shadow:-8px 0 24px rgba(0,0,0,0.2);opacity:0;transform:translateX(30px);
+    box-shadow:-12px 0 28px rgba(45,64,57,0.14);opacity:0;transform:translateX(30px);
     display:flex;flex-direction:column;
   }
   .drawer.open{right:0;opacity:1;transform:translateX(0);animation:cartFadeIn 0.35s ease;}
   .drawer-header{
-    padding:20px;background:var(--dark);color:white;
+    padding:22px;background:var(--dark);color:white;
     display:flex;justify-content:space-between;align-items:center;
   }
   .drawer-header h2{font-size:20px;}
@@ -175,48 +201,51 @@
   }
   .cart-item .info{flex:1;}
   .cart-item .info h4{font-size:15px;}
-  .cart-item .info span{font-size:13px;color:#888;}
+  .cart-item .info span{font-size:13px;color:var(--muted);}
+  .cart-item .cart-price{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+  .cart-item .cart-price .price-was{font-size:11px;}
+  .cart-item .cart-price .price-now{font-size:13px;color:var(--primary);font-weight:800;}
   .qty-controls{display:flex;align-items:center;gap:8px;}
   .qty-controls button{
-    width:26px;height:26px;border-radius:50%;border:1px solid #ddd;
-    background:white;cursor:pointer;font-weight:700;
+    width:28px;height:28px;border-radius:8px;border:1px solid var(--line);
+    background:var(--surface);cursor:pointer;font-weight:700;color:var(--dark);
   }
   .remove-btn{color:var(--primary);background:none;border:none;cursor:pointer;font-size:18px;margin-left:8px;}
-  .drawer-footer{padding:20px;border-top:2px solid #eee;}
+  .drawer-footer{padding:22px;border-top:1px solid var(--line);}
   .total-row{display:flex;justify-content:space-between;font-size:18px;font-weight:900;margin-bottom:14px;}
   .checkout-btn{
     width:100%;background:var(--accent);color:white;border:none;
-    padding:14px;border-radius:14px;font-weight:800;font-size:16px;cursor:pointer;
+    padding:14px;border-radius:10px;font-weight:800;font-size:16px;cursor:pointer;
   }
   .checkout-btn:hover{background:#05b989;}
   .empty-cart{text-align:center;color:#999;padding:40px 20px;}
 
   /* MODAL (checkout / login) */
   .modal-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;
+    position:fixed;inset:0;background:rgba(45,64,57,0.48);z-index:300;
     display:none;align-items:center;justify-content:center;padding:20px;
   }
   .modal-overlay.open{display:flex;}
   #checkoutModal.open .modal{animation:modalFadeIn 0.3s ease both;}
   .modal{
-    background:white;border-radius:20px;padding:30px;max-width:420px;width:100%;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:30px;max-width:420px;width:100%;
     box-shadow:var(--shadow);position:relative;
   }
   .modal h2{margin-bottom:16px;}
   .modal input,.modal select{
-    width:100%;padding:12px;border:2px solid #eee;border-radius:10px;
+    width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;
     margin-bottom:12px;font-size:14px;
   }
-  .modal input:focus,.modal select:focus{outline:none;border-color:var(--primary);}
+  .modal input:focus,.modal select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(92,146,127,0.12);}
   .modal button.submit{
     width:100%;background:var(--primary);color:white;border:none;
-    padding:14px;border-radius:12px;font-weight:800;cursor:pointer;font-size:15px;
+    padding:14px;border-radius:10px;font-weight:800;cursor:pointer;font-size:15px;
   }
   .modal .close-x{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#999;}
-  .coupon-box{margin:14px 0 18px;background:#fffaf5;border:1px solid #f0e2d8;border-radius:12px;padding:12px;}
+  .coupon-box{margin:14px 0 18px;background:#f7f3e9;border:1px solid var(--line);border-radius:10px;padding:12px;}
   .coupon-row{display:flex;gap:8px;}
   .coupon-row input{flex:1;margin-bottom:0;}
-  .coupon-btn{background:var(--dark);color:white;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;}
+  .coupon-btn{background:var(--dark);color:white;border:none;padding:10px 14px;border-radius:9px;font-weight:700;cursor:pointer;}
   .coupon-message{font-size:12px;margin-top:8px;min-height:18px;}
   .coupon-message.success{color:var(--accent);font-weight:700;}
   .coupon-message.error{color:var(--primary);font-weight:700;}
@@ -224,6 +253,43 @@
   .discount-summary .line{display:flex;justify-content:space-between;}
   .discount-summary .total{font-size:18px;font-weight:900;color:var(--dark);}
   .error-msg{color:var(--primary);font-size:13px;margin-bottom:10px;display:none;}
+  .cart-toast{
+    position:fixed;left:50%;bottom:28px;z-index:400;
+    background:var(--dark);color:white;padding:13px 18px;border-radius:999px;
+    box-shadow:var(--shadow);font-weight:800;font-size:14px;
+    opacity:0;pointer-events:none;transform:translate(-50%,16px);
+  }
+  .cart-toast.show{animation:toastFadeIn 0.25s ease forwards;}
+  .order-success{
+    position:fixed;inset:0;z-index:500;background:rgba(26,26,46,0.72);
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .order-success.show{display:flex;}
+  .order-success.show .success-card{animation:successFadeIn 0.35s ease both;}
+  .success-card{
+    background:var(--surface);border-radius:14px;padding:32px 28px;text-align:center;
+    max-width:360px;width:100%;box-shadow:var(--shadow);
+  }
+  .success-check{
+    width:70px;height:70px;margin:0 auto 16px;border-radius:50%;
+    background:#e1f0e8;display:flex;align-items:center;justify-content:center;
+  }
+  .success-check svg{width:42px;height:42px;stroke:var(--accent);stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .order-success.show .success-check path{stroke-dasharray:48;stroke-dashoffset:48;animation:checkDraw 0.45s 0.2s ease forwards;}
+  .success-card h2{color:var(--dark);margin-bottom:8px;}
+  .success-card p{color:#666;margin-bottom:20px;}
+  .success-card button{background:var(--accent);color:white;border:none;padding:11px 24px;border-radius:12px;font-weight:800;cursor:pointer;}
+  .flash-sale-manager{border-color:#dfc989;background:#fffaf0;}
+  .flash-sale-manager h2{color:#685328;}
+  .flash-sale-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .flash-sale-controls p{color:var(--muted);font-size:13px;margin-top:4px;}
+  .flash-sale-toggle{border:none;padding:11px 18px;border-radius:9px;background:var(--dark);color:white;font-weight:800;cursor:pointer;white-space:nowrap;}
+  .flash-sale-toggle.active{background:var(--accent);}
+  .flash-confirm-copy{color:var(--muted);line-height:1.5;margin-bottom:20px;}
+  .flash-confirm-actions{display:flex;gap:10px;}
+  .flash-confirm-actions button{flex:1;padding:12px;border:none;border-radius:9px;font-weight:800;cursor:pointer;}
+  .flash-cancel-btn{background:#eceae3;color:var(--dark);}
+  .flash-confirm-btn{background:var(--accent);color:white;}
 
   /* ADMIN DASHBOARD */
   #storeView, #adminView{
@@ -238,26 +304,26 @@
   .logout-btn{background:#555;color:white;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;}
   .stats-row{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;}
   .stat-card{
-    background:white;border-radius:16px;padding:20px;flex:1;min-width:150px;
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;flex:1;min-width:150px;
     box-shadow:var(--shadow);text-align:center;
   }
   .stat-card .num{font-size:28px;font-weight:900;color:var(--primary);}
   .stat-card .label{font-size:13px;color:#888;font-weight:600;}
   .admin-section{
-    background:white;border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:var(--shadow);
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:24px;box-shadow:var(--shadow);
   }
   .admin-section h2{margin-bottom:16px;font-size:20px;}
   .product-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px;}
   .field{display:flex;flex-direction:column;gap:6px;}
   .field.full{grid-column:1 / -1;}
   .field label{font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.04em;}
-  .product-form input,.product-form select{padding:10px;border:2px solid #eee;border-radius:8px;}
+  .product-form input,.product-form select{padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;}
   #formImage{
-    border:2px solid #b9f1dc;border-radius:14px;background:#f1fff9;
+    border:1px solid #b9d8ca;border-radius:10px;background:#f1f7f3;
     color:#4f7064;cursor:pointer;padding:8px;
   }
   #formImage::file-selector-button{
-    background:var(--accent);color:white;border:none;border-radius:999px;
+    background:var(--accent);color:white;border:none;border-radius:8px;
     padding:9px 16px;margin-right:10px;font-weight:800;cursor:pointer;
     transition:background 0.2s,transform 0.2s;
   }
@@ -266,17 +332,17 @@
     grid-column:1 / -1;background:var(--accent);color:white;border:none;
     padding:12px;border-radius:10px;font-weight:700;cursor:pointer;
   }
-  .product-image{width:100%;height:120px;object-fit:cover;border-radius:12px;background:#fff7f0;}
-  .table-thumb{width:46px;height:46px;object-fit:cover;border-radius:10px;display:block;background:#fff7f0;}
+  .product-image{width:100%;height:120px;object-fit:cover;border-radius:10px;background:#f1eadb;}
+  .table-thumb{width:46px;height:46px;object-fit:cover;border-radius:8px;display:block;background:#f1eadb;}
   table{width:100%;border-collapse:collapse;font-size:14px;}
-  th,td{text-align:left;padding:10px;border-bottom:1px solid #eee;}
-  th{color:#888;font-size:12px;text-transform:uppercase;}
+  th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-size:12px;text-transform:uppercase;}
   .table-actions button{
     border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:700;
     margin-right:6px;font-size:12px;
   }
-  .edit-btn{background:var(--secondary);}
-  .del-btn{background:var(--primary);color:white;}
+  .edit-btn{background:#eee3c8;color:#594b2f;}
+  .del-btn{background:#f1d8d2;color:#9c493e;}
   .coupon-toggle{color:white;}
   .coupon-toggle.enabled{background:var(--accent);}
   .coupon-toggle.disabled{background:#999;}
@@ -291,16 +357,16 @@
   .stock-out{background:#ffe0e0;color:#d63333;}
 
   .faq-section{max-width:1100px;margin:0 auto 48px;padding:0 20px;}
-  .faq-box{background:white;border-radius:18px;padding:24px;box-shadow:var(--shadow);}
+  .faq-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;box-shadow:var(--shadow);}
   .faq-box h2{margin-bottom:18px;font-size:28px;}
   .faq-list{display:grid;gap:14px;}
-  .faq-item{border:1px solid #f0e2d8;background:#fffaf5;border-radius:12px;padding:14px 18px;}
+  .faq-item{border:1px solid var(--line);background:#f8f5ed;border-radius:9px;padding:14px 18px;}
   .faq-question{font-weight:800;margin-bottom:6px;color:var(--dark);}
-  .faq-answer{color:#555;line-height:1.6;}
+  .faq-answer{color:var(--muted);line-height:1.6;}
 
   .faq-admin-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .faq-admin-form textarea{min-height:90px;resize:vertical;}
-  .faq-admin-form input,.faq-admin-form textarea{width:100%;padding:10px;border:2px solid #eee;border-radius:8px;}
+  .faq-admin-form input,.faq-admin-form textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;}
   .faq-admin-form button{grid-column:1 / -1;background:var(--accent);color:white;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;}
   .remove-image-btn{
     background:#fff1f1;color:var(--primary);border:1px solid #ffd7d7;
@@ -308,6 +374,15 @@
   }
 
   @media(max-width:600px){
+    nav{padding:16px 20px;}
+    nav .logo{font-size:20px;}
+    .hero{padding:48px 20px 32px;}
+    .hero h1{font-size:36px;}
+    .container{padding-bottom:44px;}
+    .floating-cart-btn{right:16px;bottom:16px;width:56px;height:56px;}
+    .drawer{width:360px;}
+    .flash-sale-banner,.flash-sale-controls{align-items:flex-start;flex-direction:column;}
+    .flash-sale-toggle{width:100%;}
     .product-form,.faq-admin-form{grid-template-columns:1fr;}
     .product-form button,.faq-admin-form button{grid-column:span 1;}
   }
@@ -328,6 +403,11 @@
   <div class="hero">
     <h1>Snacks That Slap 🔥</h1>
     <p>Fuel your grind between classes order now, pick up at break</p>
+  </div>
+
+  <div class="flash-sale-banner" id="flashSaleBanner" hidden>
+    <strong>⚡ Flash sale: 50% off everything</strong>
+    <span>Limited-time prices, same great snacks.</span>
   </div>
 
   <div class="container">
@@ -357,6 +437,17 @@
     <div class="stat-card"><div class="num" id="statOrders">0</div><div class="label">Orders</div></div>
     <div class="stat-card"><div class="num" id="statRevenue">AED 0.00</div><div class="label">Revenue</div></div>
     <div class="stat-card"><div class="num" id="statLowStock">0</div><div class="label">Low Stock</div></div>
+  </div>
+
+  <div class="admin-section flash-sale-manager">
+    <h2>⚡ Flash Sale Mode</h2>
+    <div class="flash-sale-controls">
+      <div>
+        <strong id="flashSaleStatus">Flash sale is off</strong>
+        <p>Reduce every customer price by 50% and announce it on the store.</p>
+      </div>
+      <button class="flash-sale-toggle" id="flashSaleToggle" onclick="requestFlashSaleToggle()">Turn On</button>
+    </div>
   </div>
 
   <div class="admin-section">
@@ -519,6 +610,31 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="flashSaleConfirm">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('flashSaleConfirm')">×</button>
+    <h2 id="flashConfirmTitle">Turn on flash sale?</h2>
+    <p class="flash-confirm-copy" id="flashConfirmCopy">Are you sure? All customer prices will be reduced by 50% and the sale banner will go live.</p>
+    <div class="flash-confirm-actions">
+      <button class="flash-cancel-btn" onclick="closeModal('flashSaleConfirm')">Cancel</button>
+      <button class="flash-confirm-btn" onclick="confirmFlashSaleToggle()">Yes, continue</button>
+    </div>
+  </div>
+</div>
+
+<div class="cart-toast" id="cartToast" role="status" aria-live="polite"></div>
+
+<div class="order-success" id="orderSuccess" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+  <div class="success-card">
+    <div class="success-check" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><path d="M10 25l9 9 19-20"></path></svg>
+    </div>
+    <h2 id="successTitle">Order confirmed!</h2>
+    <p id="successMessage">Your snacks are being prepared.</p>
+    <button onclick="closeOrderSuccess()">Done</button>
+  </div>
+</div>
+
 <script>
 /* ============ CONFIG ============ */
 // Password is NOT stored in plain text — only its SHA-256 hash lives here.
@@ -559,6 +675,7 @@ let coupons = (JSON.parse(localStorage.getItem('sh_coupons')) || [
 let activeCouponCode = '';
 let activeFilter = "All";
 let isLoggedIn = false;
+let flashSale = JSON.parse(localStorage.getItem('sh_flash_sale')) === true;
 const SHIPPING_FEE = 1;
 
 const formatCurrency = (value) => new Intl.NumberFormat('en-AE', {
@@ -567,12 +684,17 @@ const formatCurrency = (value) => new Intl.NumberFormat('en-AE', {
   minimumFractionDigits: 2
 }).format(value);
 
+function getSalePrice(price){
+  return flashSale ? price * 0.5 : price;
+}
+
 function saveState(){
   localStorage.setItem('sh_products', JSON.stringify(products));
   localStorage.setItem('sh_orders', JSON.stringify(orders));
   localStorage.setItem('sh_cart', JSON.stringify(cart));
   localStorage.setItem('sh_faqs', JSON.stringify(faqs));
   localStorage.setItem('sh_coupons', JSON.stringify(coupons));
+  localStorage.setItem('sh_flash_sale', JSON.stringify(flashSale));
 }
 
 /* ============ STORE RENDER ============ */
@@ -586,6 +708,8 @@ function setFilter(c){ activeFilter = c; renderStore(); }
 
 function renderStore(){
   renderFilters();
+  const saleBanner = document.getElementById('flashSaleBanner');
+  if(saleBanner) saleBanner.hidden = !flashSale;
   const list = products.filter(p => activeFilter==="All" || p.category===activeFilter);
   document.getElementById('productGrid').innerHTML = list.map(p => `
     <div class="card ${p.stock<=0?'out-of-stock':''}">
@@ -597,7 +721,11 @@ function renderStore(){
         <h3>${p.name}</h3>
         <div class="desc">${p.desc}</div>
         <div class="price-row">
-          <span class="price">${formatCurrency(p.price)}</span>
+          <span class="price${flashSale ? ' on-sale' : ''}" aria-label="${flashSale ? `Was ${formatCurrency(p.price)}, now ${formatCurrency(getSalePrice(p.price))}` : formatCurrency(p.price)}">
+            ${flashSale
+              ? `<span class="price-was">Was ${formatCurrency(p.price)}</span><span class="price-now">Now ${formatCurrency(getSalePrice(p.price))}</span>`
+              : formatCurrency(p.price)}
+          </span>
           <button class="add-btn" ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id})">
             ${p.stock<=0?'Sold Out':'Add +'}
           </button>
@@ -612,10 +740,22 @@ function addToCart(id){
   const p = products.find(x=>x.id===id);
   if(!p || p.stock<=0) return;
   const item = cart.find(c=>c.id===id);
-  if(item){ if(item.qty < p.stock) item.qty++; }
-  else cart.push({id, qty:1});
+  if(item){
+    if(item.qty < p.stock) item.qty++;
+    else return;
+  } else cart.push({id, qty:1});
   saveState();
   renderCart();
+  showCartToast(`${p.emoji} ${p.name} added to cart`);
+}
+function showCartToast(message){
+  const toast = document.getElementById('cartToast');
+  toast.textContent = message;
+  toast.classList.remove('show');
+  void toast.offsetWidth;
+  toast.classList.add('show');
+  clearTimeout(showCartToast.timeout);
+  showCartToast.timeout = setTimeout(() => toast.classList.remove('show'), 2200);
 }
 function changeQty(id, delta){
   const item = cart.find(c=>c.id===id);
@@ -635,7 +775,7 @@ function removeItem(id){
 function getCartSubtotal(){
   return cart.reduce((sum, c) => {
     const p = products.find(x => x.id === c.id);
-    return sum + (p ? p.price * c.qty : 0);
+    return sum + (p ? getSalePrice(p.price) * c.qty : 0);
   }, 0);
 }
 function getCouponByCode(code){
@@ -671,13 +811,17 @@ function renderCart(){
   document.getElementById('cartItems').innerHTML = cart.map(c=>{
     const p = products.find(x=>x.id===c.id);
     if(!p) return '';
-    const sub = p.price * c.qty;
+    const sub = getSalePrice(p.price) * c.qty;
     total += sub;
     return `
       <div class="cart-item">
         <div class="info">
           <h4>${p.emoji} ${p.name}</h4>
-          <span>${formatCurrency(p.price)} each</span>
+          <span class="cart-price">
+            ${flashSale
+              ? `<span class="price-was">Was ${formatCurrency(p.price)} each</span><span class="price-now">Now ${formatCurrency(getSalePrice(p.price))} each</span>`
+              : `${formatCurrency(p.price)} each`}
+          </span>
         </div>
         <div class="qty-controls">
           <button onclick="changeQty(${p.id},-1)">−</button>
@@ -770,7 +914,7 @@ function placeOrder(){
   const itemSummary = cart.map(c=>{
     const p = products.find(x=>x.id===c.id);
     p.stock -= c.qty;
-    total += p.price * c.qty;
+    total += getSalePrice(p.price) * c.qty;
     return `${p.name} x${c.qty}`;
   }).join(', ');
 
@@ -793,12 +937,51 @@ function placeOrder(){
   document.getElementById('checkoutCoupon').value='';
   document.getElementById('couponMessage').textContent='';
   document.getElementById('couponMessage').className='coupon-message';
-  alert(`Order placed! 🔥 See you at pickup, ${name}!`);
+  showOrderSuccess(name);
+}
+
+function showOrderSuccess(name){
+  showSuccessPopup('Order confirmed!', `See you at pickup, ${name}!`);
+}
+function showSuccessPopup(title, message){
+  const success = document.getElementById('orderSuccess');
+  document.getElementById('successTitle').textContent = title;
+  document.getElementById('successMessage').textContent = message;
+  success.classList.remove('show');
+  void success.offsetWidth;
+  success.classList.add('show');
+}
+function closeOrderSuccess(){
+  document.getElementById('orderSuccess').classList.remove('show');
 }
 
 /* ============ MODALS ============ */
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function openLoginModal(){ document.getElementById('loginModal').classList.add('open'); }
+
+function requestFlashSaleToggle(){
+  const turningOn = !flashSale;
+  document.getElementById('flashConfirmTitle').textContent = turningOn
+    ? 'Turn on flash sale?'
+    : 'Turn off flash sale?';
+  document.getElementById('flashConfirmCopy').textContent = turningOn
+    ? 'Are you sure? All customer prices will be reduced by 50% and the sale banner will go live.'
+    : 'Are you sure? Customer prices will return to their regular amounts and the sale banner will be removed.';
+  document.getElementById('flashSaleConfirm').classList.add('open');
+}
+function confirmFlashSaleToggle(){
+  flashSale = !flashSale;
+  saveState();
+  closeModal('flashSaleConfirm');
+  renderStore();
+  renderCart();
+  updateCheckoutSummary();
+  renderAdmin();
+  showSuccessPopup(
+    flashSale ? 'Flash sale is live!' : 'Flash sale turned off',
+    flashSale ? 'Done. Every customer price is now 50% off.' : 'Done. Regular prices are back.'
+  );
+}
 
 async function tryLogin(){
   const u = document.getElementById('loginUser').value;
@@ -879,12 +1062,19 @@ function renderAdmin(){
   document.getElementById('statOrders').textContent = orders.length;
   document.getElementById('statRevenue').textContent = formatCurrency(orders.reduce((s,o)=>s+o.total,0));
   document.getElementById('statLowStock').textContent = products.filter(p=>p.stock<=5).length;
+  const flashSaleStatus = document.getElementById('flashSaleStatus');
+  const flashSaleToggle = document.getElementById('flashSaleToggle');
+  if(flashSaleStatus) flashSaleStatus.textContent = flashSale ? 'Flash sale is on' : 'Flash sale is off';
+  if(flashSaleToggle){
+    flashSaleToggle.textContent = flashSale ? 'Turn Off' : 'Turn On';
+    flashSaleToggle.classList.toggle('active', flashSale);
+  }
 
   document.getElementById('productTable').innerHTML = products.map(p=>`
     <tr>
       <td>${p.image ? `<img class="table-thumb" src="${p.image}" alt="${p.name}">` : p.emoji} ${p.name}</td>
       <td>${p.category}</td>
-      <td>${formatCurrency(p.price)}</td>
+      <td>${formatCurrency(getSalePrice(p.price))}${flashSale ? '<br><small style="color:#5c927f">Regular: ' + formatCurrency(p.price) + '</small>' : ''}</td>
       <td><span class="stock-badge ${p.stock>0?'stock-in':'stock-out'}">${p.stock} left</span></td>
       <td class="table-actions">
         <button class="edit-btn" onclick="editProduct(${p.id})">Edit</button>
