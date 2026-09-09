@@ -290,6 +290,10 @@
   .flash-confirm-actions button{flex:1;padding:12px;border:none;border-radius:9px;font-weight:800;cursor:pointer;}
   .flash-cancel-btn{background:#eceae3;color:var(--dark);}
   .flash-confirm-btn{background:var(--accent);color:white;}
+  .credentials-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .credentials-form input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;}
+  .credentials-form button{grid-column:1 / -1;background:var(--dark);color:white;border:none;padding:12px;border-radius:9px;font-weight:800;cursor:pointer;}
+  .credentials-error{grid-column:1 / -1;color:var(--primary);font-size:13px;min-height:18px;}
 
   /* ADMIN DASHBOARD */
   #storeView, #adminView{
@@ -383,6 +387,8 @@
     .drawer{width:360px;}
     .flash-sale-banner,.flash-sale-controls{align-items:flex-start;flex-direction:column;}
     .flash-sale-toggle{width:100%;}
+    .credentials-form{grid-template-columns:1fr;}
+    .credentials-form button,.credentials-error{grid-column:span 1;}
     .product-form,.faq-admin-form{grid-template-columns:1fr;}
     .product-form button,.faq-admin-form button{grid-column:span 1;}
   }
@@ -554,6 +560,11 @@
       <tbody id="orderTable"></tbody>
     </table>
   </div>
+
+  <div class="admin-section">
+    <h2>🔐 Change Admin Login</h2>
+    <button class="flash-sale-toggle" onclick="openCredentialsModal()">Change Username or Password</button>
+  </div>
 </div>
 
 <!-- CART DRAWER -->
@@ -622,6 +633,23 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="credentialsModal">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('credentialsModal')">×</button>
+    <h2>🔐 Change Admin Login</h2>
+    <div class="credentials-form">
+      <input type="text" id="currentUsername" placeholder="Current username" autocomplete="username">
+      <input type="password" id="currentPassword" placeholder="Current password" autocomplete="current-password">
+      <input type="text" id="newUsername" placeholder="New username" autocomplete="username">
+      <input type="text" id="confirmUsername" placeholder="New username again" autocomplete="username">
+      <input type="password" id="newPassword" placeholder="New password" autocomplete="new-password">
+      <input type="password" id="confirmPassword" placeholder="New password again" autocomplete="new-password">
+      <div class="credentials-error" id="credentialsError" role="alert"></div>
+      <button onclick="changeAdminCredentials()">Save New Login</button>
+    </div>
+  </div>
+</div>
+
 <div class="cart-toast" id="cartToast" role="status" aria-live="polite"></div>
 
 <div class="order-success" id="orderSuccess" role="dialog" aria-modal="true" aria-labelledby="successTitle">
@@ -676,6 +704,7 @@ let activeCouponCode = '';
 let activeFilter = "All";
 let isLoggedIn = false;
 let flashSale = JSON.parse(localStorage.getItem('sh_flash_sale')) === true;
+let adminHash = localStorage.getItem('sh_admin_hash') || ADMIN_HASH;
 const SHIPPING_FEE = 1;
 
 const formatCurrency = (value) => new Intl.NumberFormat('en-AE', {
@@ -959,6 +988,44 @@ function closeOrderSuccess(){
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function openLoginModal(){ document.getElementById('loginModal').classList.add('open'); }
 
+function openCredentialsModal(){
+  document.getElementById('credentialsError').textContent = '';
+  ['currentUsername','currentPassword','newUsername','confirmUsername','newPassword','confirmPassword']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('credentialsModal').classList.add('open');
+}
+async function changeAdminCredentials(){
+  const currentUsername = document.getElementById('currentUsername').value.trim();
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newUsername = document.getElementById('newUsername').value.trim();
+  const confirmUsername = document.getElementById('confirmUsername').value.trim();
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const error = document.getElementById('credentialsError');
+
+  if(!currentUsername || !currentPassword || !newUsername || !confirmUsername || !newPassword || !confirmPassword){
+    error.textContent = 'Please complete every field.';
+    return;
+  }
+  if(newUsername !== confirmUsername){
+    error.textContent = 'The new usernames do not match.';
+    return;
+  }
+  if(newPassword !== confirmPassword){
+    error.textContent = 'The new passwords do not match.';
+    return;
+  }
+  if(await sha256(`${currentUsername}:${currentPassword}`) !== adminHash){
+    error.textContent = 'The current username or password is incorrect.';
+    return;
+  }
+
+  adminHash = await sha256(`${newUsername}:${newPassword}`);
+  localStorage.setItem('sh_admin_hash', adminHash);
+  closeModal('credentialsModal');
+  showSuccessPopup('Login details updated!', 'Done. Your new admin username and password are active.');
+}
+
 function requestFlashSaleToggle(){
   const turningOn = !flashSale;
   document.getElementById('flashConfirmTitle').textContent = turningOn
@@ -987,7 +1054,7 @@ async function tryLogin(){
   const u = document.getElementById('loginUser').value;
   const p = document.getElementById('loginPass').value;
   const attemptHash = await sha256(u + ":" + p);
-  if(attemptHash === ADMIN_HASH){
+  if(attemptHash === adminHash){
     isLoggedIn = true;
     closeModal('loginModal');
     document.getElementById('loginUser').value='';
