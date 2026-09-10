@@ -1,5 +1,3 @@
-const { createClient } = require('@supabase/supabase-js');
-
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
@@ -21,6 +19,12 @@ function setCorsHeaders(req, res) {
   res.setHeader('Vary', 'Origin');
 }
 
+function sendJson(res, statusCode, payload) {
+  res.statusCode = statusCode;
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(payload));
+}
+
 module.exports = async (req, res) => {
   setCorsHeaders(req, res);
 
@@ -31,44 +35,40 @@ module.exports = async (req, res) => {
   }
 
   if (req.method !== 'POST') {
-    res.statusCode = 405;
     res.setHeader('Allow', 'POST, OPTIONS');
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Method not allowed' }));
+    sendJson(res, 405, { error: 'Method not allowed' });
     return;
   }
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Checkout service is not configured.' }));
+    sendJson(res, 500, { error: 'Checkout service is not configured.' });
     return;
   }
 
   const { items, total } = req.body || {};
   if (!Array.isArray(items) || items.length === 0 || typeof total !== 'number' || !Number.isFinite(total) || total < 0) {
-    res.statusCode = 400;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Order items and a valid total are required.' }));
+    sendJson(res, 400, { error: 'Order items and a valid total are required.' });
     return;
   }
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
-  const { data, error } = await supabase
-    .from('orders')
-    .insert({ items, total })
-    .select()
-    .single();
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const { data, error } = await supabase
+      .from('orders')
+      .insert({ items, total })
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Supabase order insert failed:', error);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Unable to save your order.' }));
-    return;
+    if (error) {
+      console.error('Supabase order insert failed:', error);
+      sendJson(res, 500, { error: 'Unable to save your order.' });
+      return;
+    }
+
+    sendJson(res, 201, { success: true, order: data });
+  } catch (error) {
+    console.error('Checkout service failed:', error);
+    sendJson(res, 500, { error: 'Checkout service is temporarily unavailable.' });
   }
-
-  res.statusCode = 201;
-  res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify({ success: true, order: data }));
 };

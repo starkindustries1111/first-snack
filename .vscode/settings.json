@@ -7,6 +7,14 @@
         "/^sed '1,/<script>/d; /<\\\\/script>/,\\$d' frontend/index\\.html \\| node --check$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^node --check api/checkout\\.js && sed '1,/<script>/d; /<\\\\/script>/,\\$d' frontend/index\\.html \\| node --check$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^node - <<'NODE'\nconst handler = require\\('\\./api/checkout'\\);\nconst response = \\{ headers: \\{\\}, setHeader\\(name, value\\) \\{ this\\.headers\\[name\\] = value; \\}, end\\(body\\) \\{ console\\.log\\(this\\.statusCode, this\\.headers\\['Access-Control-Allow-Origin'\\], body\\); \\} \\};\nhandler\\(\\{ method: 'POST', headers: \\{ origin: 'https://example\\.netlify\\.app' \\}, body: \\{ items: \\[\\{ id: 1 \\}\\], total: 2 \\} \\}, response\\);\nNODE$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

@@ -1020,7 +1020,9 @@ async function placeOrder(){
     document.getElementById('successMessage').textContent = 'Your order was saved successfully.';
     document.getElementById('orderSuccess').classList.add('show');
   } catch (requestError) {
-    error.textContent = requestError.message;
+    error.textContent = requestError instanceof TypeError
+      ? 'Checkout service could not be reached. Please try again in a moment.'
+      : requestError.message;
     error.style.display = 'block';
   } finally {
     checkoutButton.disabled = false;
