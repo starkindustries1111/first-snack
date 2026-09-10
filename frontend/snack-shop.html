@@ -874,4 +874,79 @@ function renderCart(){
   
   document.getElementById('cartTotal').textContent = formatCurrency(total);
 }
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+
+function openLoginModal(){
+  document.getElementById('loginModal').classList.add('open');
+}
+
+async function tryLogin(){
+  const username = document.getElementById('loginUser').value;
+  const password = document.getElementById('loginPass').value;
+  const valid = await sha256(`${username}:${password}`) === adminHash;
+  if(!valid){
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  isLoggedIn = true;
+  closeModal('loginModal');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  showAdmin();
+}
+
+function showStore(){
+  document.getElementById('storeView').style.display = 'block';
+  document.getElementById('adminView').style.display = 'none';
+  renderStore();
+  renderFaq();
+  renderCart();
+}
+
+function showAdmin(){
+  document.getElementById('storeView').style.display = 'none';
+  document.getElementById('adminView').style.display = 'block';
+  renderAdmin();
+}
+
+function logout(){
+  isLoggedIn = false;
+  showStore();
+}
+
+function renderAdmin(){
+  document.getElementById('statProducts').textContent = products.length;
+  document.getElementById('statOrders').textContent = orders.length;
+  document.getElementById('statRevenue').textContent = formatCurrency(orders.reduce((sum, order) => sum + order.total, 0));
+  document.getElementById('statLowStock').textContent = products.filter(product => product.stock <= 5).length;
+  document.getElementById('productTable').innerHTML = products.map(product => `
+    <tr>
+      <td>${product.emoji} ${product.name}</td>
+      <td>${product.category}</td>
+      <td>${formatCurrency(getSalePrice(product.price))}</td>
+      <td>${product.stock} left</td>
+      <td>Available</td>
+    </tr>
+  `).join('');
+  document.getElementById('orderTable').innerHTML = orders.map(order => `
+    <tr><td>${order.orderNum}</td><td>${order.items}</td><td>${formatCurrency(order.total)}</td><td>${order.time}</td></tr>
+  `).join('') || '<tr><td colspan="4">No orders yet</td></tr>';
+}
+
+function renderFaq(){
+  document.getElementById('faqList').innerHTML = faqs.map(faq => `
+    <div class="faq-item">
+      <div class="faq-question">${faq.question}</div>
+      <div class="faq-answer">${faq.answer}</div>
+    </div>
+  `).join('');
+}
+
+renderStore();
+renderFaq();
+renderCart();
 </script>
