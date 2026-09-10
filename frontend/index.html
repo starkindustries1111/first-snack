@@ -290,8 +290,10 @@
   .flash-confirm-actions button{flex:1;padding:12px;border:none;border-radius:9px;font-weight:800;cursor:pointer;}
   .flash-cancel-btn{background:#eceae3;color:var(--dark);}
   .flash-confirm-btn{background:var(--accent);color:white;}
-  .credentials-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .credentials-form input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;}
+  .credentials-form{display:grid;gap:14px;}
+  .credentials-form label{display:grid;gap:6px;font-size:13px;font-weight:800;color:var(--dark);}
+  .credentials-form input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;font:inherit;font-weight:400;}
+  .credentials-help{margin:-6px 0 2px;color:var(--muted);font-size:13px;line-height:1.5;}
   .credentials-form button{grid-column:1 / -1;background:var(--dark);color:white;border:none;padding:12px;border-radius:9px;font-weight:800;cursor:pointer;}
   .credentials-error{grid-column:1 / -1;color:var(--primary);font-size:13px;min-height:18px;}
 
@@ -372,6 +374,11 @@
   .faq-admin-form textarea{min-height:90px;resize:vertical;}
   .faq-admin-form input,.faq-admin-form textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;}
   .faq-admin-form button{grid-column:1 / -1;background:var(--accent);color:white;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;}
+  .faq-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .faq-actions button{border:none;padding:7px 11px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;transition:transform 0.2s,filter 0.2s;}
+  .faq-actions button:hover{transform:translateY(-1px);filter:brightness(0.96);}
+  .faq-edit-btn{background:#eee3c8;color:#594b2f;}
+  .faq-delete-btn{background:#f1d8d2;color:#9c493e;}
   .remove-image-btn{
     background:#fff1f1;color:var(--primary);border:1px solid #ffd7d7;
     padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700;
@@ -387,7 +394,6 @@
     .drawer{width:360px;}
     .flash-sale-banner,.flash-sale-controls{align-items:flex-start;flex-direction:column;}
     .flash-sale-toggle{width:100%;}
-    .credentials-form{grid-template-columns:1fr;}
     .credentials-form button,.credentials-error{grid-column:span 1;}
     .product-form,.faq-admin-form{grid-template-columns:1fr;}
     .product-form button,.faq-admin-form button{grid-column:span 1;}
@@ -562,8 +568,8 @@
   </div>
 
   <div class="admin-section">
-    <h2>🔐 Change Admin Login</h2>
-    <button class="flash-sale-toggle" onclick="openCredentialsModal()">Change Username or Password</button>
+    <h2>🔐 Update Login Details</h2>
+    <button class="flash-sale-toggle" onclick="openCredentialsModal()">Update Username or Password</button>
   </div>
 </div>
 
@@ -636,16 +642,26 @@
 <div class="modal-overlay" id="credentialsModal">
   <div class="modal">
     <button class="close-x" onclick="closeModal('credentialsModal')">×</button>
-    <h2>🔐 Change Admin Login</h2>
+    <h2>🔐 Update Login Details</h2>
+    <p class="credentials-help">Enter your current login first. Leave the new username or password blank to keep it unchanged.</p>
     <div class="credentials-form">
-      <input type="text" id="currentUsername" placeholder="Current username" autocomplete="username">
-      <input type="password" id="currentPassword" placeholder="Current password" autocomplete="current-password">
-      <input type="text" id="newUsername" placeholder="New username" autocomplete="username">
-      <input type="text" id="confirmUsername" placeholder="New username again" autocomplete="username">
-      <input type="password" id="newPassword" placeholder="New password" autocomplete="new-password">
-      <input type="password" id="confirmPassword" placeholder="New password again" autocomplete="new-password">
+      <label for="currentUsername">Current username
+        <input type="text" id="currentUsername" autocomplete="username">
+      </label>
+      <label for="currentPassword">Current password
+        <input type="password" id="currentPassword" autocomplete="current-password">
+      </label>
+      <label for="newUsername">New username <span>(optional)</span>
+        <input type="text" id="newUsername" autocomplete="username">
+      </label>
+      <label for="newPassword">New password <span>(optional)</span>
+        <input type="password" id="newPassword" autocomplete="new-password">
+      </label>
+      <label for="confirmPassword">Confirm new password
+        <input type="password" id="confirmPassword" autocomplete="new-password">
+      </label>
       <div class="credentials-error" id="credentialsError" role="alert"></div>
-      <button onclick="changeAdminCredentials()">Save New Login</button>
+      <button type="button" onclick="changeAdminCredentials()">Save Login Details</button>
     </div>
   </div>
 </div>
@@ -883,6 +899,12 @@ function openLoginModal(){
   document.getElementById('loginModal').classList.add('open');
 }
 
+function openCredentialsModal(){
+  document.getElementById('credentialsError').textContent = '';
+  document.getElementById('credentialsModal').classList.add('open');
+  document.getElementById('currentUsername').focus();
+}
+
 async function tryLogin(){
   const username = document.getElementById('loginUser').value;
   const password = document.getElementById('loginPass').value;
@@ -897,6 +919,46 @@ async function tryLogin(){
   document.getElementById('loginPass').value = '';
   document.getElementById('loginError').style.display = 'none';
   showAdmin();
+}
+
+async function changeAdminCredentials(){
+  const currentUsername = document.getElementById('currentUsername').value.trim();
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newUsername = document.getElementById('newUsername').value.trim();
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const error = document.getElementById('credentialsError');
+
+  error.textContent = '';
+
+  if(!currentUsername || !currentPassword){
+    error.textContent = 'Enter your current username and password.';
+    return;
+  }
+
+  if(await sha256(`${currentUsername}:${currentPassword}`) !== adminHash){
+    error.textContent = 'The current username or password is incorrect.';
+    return;
+  }
+
+  if(!newUsername && !newPassword){
+    error.textContent = 'Enter a new username or password to make a change.';
+    return;
+  }
+
+  if(newPassword && newPassword !== confirmPassword){
+    error.textContent = 'The new passwords do not match.';
+    return;
+  }
+
+  const updatedUsername = newUsername || currentUsername;
+  const updatedPassword = newPassword || currentPassword;
+  adminHash = await sha256(`${updatedUsername}:${updatedPassword}`);
+  localStorage.setItem('sh_admin_hash', adminHash);
+  closeModal('credentialsModal');
+  ['currentUsername', 'currentPassword', 'newUsername', 'newPassword', 'confirmPassword']
+    .forEach(id => document.getElementById(id).value = '');
+  showCartToast('Login details updated');
 }
 
 function showStore(){
@@ -944,8 +1006,10 @@ function renderFaqAdmin(){
       <td>${faq.question}</td>
       <td>${faq.answer}</td>
       <td>
-        <button type="button" onclick="editFaq(${faq.id})">Edit</button>
-        <button type="button" onclick="deleteFaq(${faq.id})">Delete</button>
+        <div class="faq-actions">
+          <button type="button" class="faq-edit-btn" onclick="editFaq(${faq.id})">Edit</button>
+          <button type="button" class="faq-delete-btn" onclick="deleteFaq(${faq.id})">Delete</button>
+        </div>
       </td>
     </tr>
   `).join('') || '<tr><td colspan="3">No FAQs yet</td></tr>';
