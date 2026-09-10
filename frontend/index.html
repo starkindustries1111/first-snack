@@ -923,6 +923,7 @@ function renderAdmin(){
   document.getElementById('statOrders').textContent = orders.length;
   document.getElementById('statRevenue').textContent = formatCurrency(orders.reduce((sum, order) => sum + order.total, 0));
   document.getElementById('statLowStock').textContent = products.filter(product => product.stock <= 5).length;
+  renderFaqAdmin();
   document.getElementById('productTable').innerHTML = products.map(product => `
     <tr>
       <td>${product.emoji} ${product.name}</td>
@@ -935,6 +936,60 @@ function renderAdmin(){
   document.getElementById('orderTable').innerHTML = orders.map(order => `
     <tr><td>${order.orderNum}</td><td>${order.items}</td><td>${formatCurrency(order.total)}</td><td>${order.time}</td></tr>
   `).join('') || '<tr><td colspan="4">No orders yet</td></tr>';
+}
+
+function renderFaqAdmin(){
+  document.getElementById('faqTable').innerHTML = faqs.map(faq => `
+    <tr>
+      <td>${faq.question}</td>
+      <td>${faq.answer}</td>
+      <td>
+        <button type="button" onclick="editFaq(${faq.id})">Edit</button>
+        <button type="button" onclick="deleteFaq(${faq.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="3">No FAQs yet</td></tr>';
+}
+
+function saveFaq(){
+  const question = document.getElementById('faqQuestion').value.trim();
+  const answer = document.getElementById('faqAnswer').value.trim();
+  const editId = Number(document.getElementById('faqEditId').value);
+
+  if(!question || !answer) return;
+
+  if(editId){
+    const faq = faqs.find(item => item.id === editId);
+    if(faq){
+      faq.question = question;
+      faq.answer = answer;
+    }
+  } else {
+    faqs.push({id: Date.now(), question, answer});
+  }
+
+  saveState();
+  document.getElementById('faqEditId').value = '';
+  document.getElementById('faqQuestion').value = '';
+  document.getElementById('faqAnswer').value = '';
+  renderFaqAdmin();
+  renderFaq();
+}
+
+function editFaq(id){
+  const faq = faqs.find(item => item.id === id);
+  if(!faq) return;
+  document.getElementById('faqEditId').value = faq.id;
+  document.getElementById('faqQuestion').value = faq.question;
+  document.getElementById('faqAnswer').value = faq.answer;
+  document.getElementById('faqQuestion').focus();
+}
+
+function deleteFaq(id){
+  faqs = faqs.filter(faq => faq.id !== id);
+  saveState();
+  renderFaqAdmin();
+  renderFaq();
 }
 
 function renderFaq(){
