@@ -52,23 +52,35 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { createClient } = require('@supabase/supabase-js');
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    const { data, error } = await supabase
-      .from('orders')
-      .insert({ items, total })
-      .select()
-      .single();
+    const ordersUrl = new URL('/rest/v1/orders', supabaseUrl);
+    const response = await fetch(ordersUrl, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify({ items, total })
+    });
+    const responseText = await response.text();
+    let data = null;
 
-    if (error) {
-      console.error('Supabase order insert failed:', error);
+    try {
+      data = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      console.error('Supabase order insert failed:', response.status, responseText);
       sendJson(res, 500, { error: 'Unable to save your order.' });
       return;
     }
 
-    sendJson(res, 201, { success: true, order: data });
+    sendJson(res, 201, { success: true, order: Array.isArray(data) ? data[0] : data });
   } catch (error) {
     console.error('Checkout service failed:', error);
-    sendJson(res, 500, { error: 'Checkout service is temporarily unavailable.' });
+    sendJson(res, 500, { error: 'Checkout service is not configured correctly.' });
   }
 };
