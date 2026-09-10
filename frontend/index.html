@@ -86,9 +86,9 @@
   .floating-cart-btn{
     position:fixed;right:28px;bottom:28px;z-index:150;
     background:var(--accent);color:white;border:none;
-    width:60px;height:60px;border-radius:16px;
+    min-width:120px;height:52px;padding:0 16px;border-radius:14px;
     display:flex;align-items:center;justify-content:center;
-    font-size:22px;cursor:pointer;box-shadow:var(--shadow);transition:transform 0.2s,background 0.2s;
+    gap:8px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:var(--shadow);transition:transform 0.2s,background 0.2s;
   }
   .floating-cart-btn:hover{background:var(--dark);transform:translateY(-3px);}
   .floating-cart-btn span{
@@ -110,14 +110,15 @@
   }
   .hero p{font-size:17px;color:var(--muted);font-weight:500;max-width:540px;line-height:1.6;}
   .flash-sale-banner{
-    max-width:1160px;margin:0 auto 34px;padding:16px 20px;
-    background:#f1e5c5;border:1px solid #dfc989;border-radius:12px;
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
-    color:#5d4a22;
+    max-width:1160px;margin:0 auto 38px;padding:24px 28px;
+    background:#f1e5c5;border:2px solid #d5b85f;border-radius:16px;
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    color:#5d4a22;box-shadow:0 10px 24px rgba(120,91,31,0.12);
   }
   .flash-sale-banner[hidden]{display:none;}
-  .flash-sale-banner strong{font-size:18px;}
-  .flash-sale-banner span{font-size:13px;color:#76643b;}
+  .flash-sale-banner strong{font-size:clamp(22px,3vw,32px);font-weight:900;line-height:1.1;}
+  .flash-sale-banner strong::before{content:'FLASH SALE';display:block;margin-bottom:6px;font-size:12px;letter-spacing:0.14em;color:#986f1d;}
+  .flash-sale-banner span{font-size:15px;color:#76643b;font-weight:700;}
 
   /* PRODUCT GRID */
   .container{max-width:1200px;margin:0 auto;padding:0 20px 60px;}
@@ -205,12 +206,18 @@
   .cart-item .cart-price{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
   .cart-item .cart-price .price-was{font-size:11px;}
   .cart-item .cart-price .price-now{font-size:13px;color:var(--primary);font-weight:800;}
-  .qty-controls{display:flex;align-items:center;gap:8px;}
-  .qty-controls button{
-    width:28px;height:28px;border-radius:8px;border:1px solid var(--line);
-    background:var(--surface);cursor:pointer;font-weight:700;color:var(--dark);
+  .cart-item .actions{display:flex;align-items:center;gap:6px;margin-left:12px;}
+  .cart-item .actions button{
+    width:30px;height:30px;border:1px solid #d7dfd9;border-radius:9px;
+    background:#f7faf6;color:var(--dark);cursor:pointer;font-size:16px;font-weight:900;
+    display:inline-flex;align-items:center;justify-content:center;transition:background 0.2s,border-color 0.2s,transform 0.2s;
   }
-  .remove-btn{color:var(--primary);background:none;border:none;cursor:pointer;font-size:18px;margin-left:8px;}
+  .cart-item .actions button:hover{background:#e7f0eb;border-color:#b9d8ca;transform:translateY(-1px);}
+  .cart-item .actions span{min-width:24px;text-align:center;font-size:14px;font-weight:900;color:var(--dark);}
+  .cart-item .actions .remove{
+    width:32px;height:32px;margin-left:5px;border-color:#f1d8d2;background:#fff5f2;color:var(--primary);font-size:15px;
+  }
+  .cart-item .actions .remove:hover{background:#fbe5df;border-color:#e9b9ae;}
   .drawer-footer{padding:22px;border-top:1px solid var(--line);}
   .total-row{display:flex;justify-content:space-between;font-size:18px;font-weight:900;margin-bottom:14px;}
   .checkout-btn{
@@ -242,11 +249,16 @@
     padding:14px;border-radius:10px;font-weight:800;cursor:pointer;font-size:15px;
   }
   .modal .close-x{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#999;}
-  .coupon-box{margin:14px 0 18px;background:#f7f3e9;border:1px solid var(--line);border-radius:10px;padding:12px;}
-  .coupon-row{display:flex;gap:8px;}
-  .coupon-row input{flex:1;margin-bottom:0;}
-  .coupon-btn{background:var(--dark);color:white;border:none;padding:10px 14px;border-radius:9px;font-weight:700;cursor:pointer;}
-  .coupon-message{font-size:12px;margin-top:8px;min-height:18px;}
+  .coupon-box{margin:16px 0 20px;background:#f4f8f4;border:1px solid #cfe0d5;border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+  .coupon-box::before{content:'%';position:absolute;top:-18px;right:14px;color:#dcebe1;font-size:82px;font-weight:900;line-height:1;pointer-events:none;}
+  .coupon-box label{display:block;position:relative;margin-bottom:9px;color:var(--dark);font-size:13px;font-weight:900;letter-spacing:0.02em;}
+  .coupon-box label::before{content:'🎟';margin-right:6px;}
+  .coupon-row{display:flex;gap:8px;position:relative;}
+  .coupon-row input{flex:1;margin-bottom:0;background:#fff;border-color:#c7d9cd;font-weight:700;}
+  .coupon-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(92,146,127,0.14);}
+  .coupon-btn{background:var(--dark);color:white;border:none;padding:10px 16px;border-radius:9px;font-weight:800;cursor:pointer;transition:background 0.2s,transform 0.2s;}
+  .coupon-btn:hover{background:var(--accent);transform:translateY(-1px);}
+  .coupon-message{font-size:12px;margin-top:9px;min-height:18px;position:relative;}
   .coupon-message.success{color:var(--accent);font-weight:700;}
   .coupon-message.error{color:var(--primary);font-weight:700;}
   .discount-summary{display:grid;gap:6px;margin:12px 0 16px;color:#555;font-size:14px;}
@@ -319,11 +331,15 @@
     background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:24px;box-shadow:var(--shadow);
   }
   .admin-section h2{margin-bottom:16px;font-size:20px;}
-  .product-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+  .item-manager{border-color:#d8d0bd;background:#fffdf8;}
+  .item-manager h2,.coupon-manager h2{display:flex;align-items:center;gap:8px;}
+  .item-manager h2::after,.coupon-manager h2::after{content:'';height:3px;flex:1;background:#e8e4da;border-radius:3px;}
+  .product-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:16px;padding:16px;border:1px solid #ebe5d8;border-radius:11px;background:#fcfaf4;}
   .field{display:flex;flex-direction:column;gap:6px;}
   .field.full{grid-column:1 / -1;}
-  .field label{font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.04em;}
-  .product-form input,.product-form select{padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;}
+  .field label{font-size:11px;font-weight:900;color:#66706b;text-transform:uppercase;letter-spacing:0.06em;}
+  .product-form input,.product-form select{padding:11px 12px;border:1px solid #dcded6;border-radius:9px;background:#fffefa;font:inherit;color:var(--dark);transition:border-color 0.2s,box-shadow 0.2s;}
+  .product-form input:focus,.product-form select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(92,146,127,0.12);}
   #formImage{
     border:1px solid #b9d8ca;border-radius:10px;background:#f1f7f3;
     color:#4f7064;cursor:pointer;padding:8px;
@@ -336,8 +352,9 @@
   #formImage::file-selector-button:hover{background:#05b989;transform:translateY(-1px);}
   .product-form button{
     grid-column:1 / -1;background:var(--accent);color:white;border:none;
-    padding:12px;border-radius:10px;font-weight:700;cursor:pointer;
+    padding:13px;border-radius:10px;font-weight:900;cursor:pointer;transition:background 0.2s,transform 0.2s;
   }
+  .product-form button:hover{background:var(--dark);transform:translateY(-1px);}
   .product-image{width:100%;height:120px;object-fit:cover;border-radius:10px;background:#f1eadb;}
   .table-thumb{width:46px;height:46px;object-fit:cover;border-radius:8px;display:block;background:#f1eadb;}
   table{width:100%;border-collapse:collapse;font-size:14px;}
@@ -349,10 +366,18 @@
   }
   .edit-btn{background:#eee3c8;color:#594b2f;}
   .del-btn{background:#f1d8d2;color:#9c493e;}
+  .inventory-delete-btn{background:#c96857;color:white;}
+  .inventory-delete-btn:hover{background:#a94d40;}
   .coupon-toggle{color:white;}
   .coupon-toggle.enabled{background:var(--accent);}
   .coupon-toggle.disabled{background:#999;}
-  .coupon-option{display:flex;align-items:center;justify-content:flex-start;gap:8px;grid-column:1 / -1;width:max-content;max-width:100%;color:#555;font-size:14px;font-weight:700;}
+  .coupon-manager{border-color:#cfe0d5;background:#fbfefb;}
+  .coupon-manager .faq-admin-form{padding:16px;border:1px solid #dcebe1;border-radius:11px;background:#f4f8f4;}
+  .coupon-manager .faq-admin-form input{padding:11px 12px;border-color:#c7d9cd;background:#fff;}
+  .coupon-manager .faq-admin-form input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(92,146,127,0.12);}
+  .coupon-manager .faq-admin-form button{background:var(--dark);transition:background 0.2s,transform 0.2s;}
+  .coupon-manager .faq-admin-form button:hover{background:var(--accent);transform:translateY(-1px);}
+  .coupon-option{display:flex;align-items:center;justify-content:flex-start;gap:8px;grid-column:1 / -1;width:max-content;max-width:100%;color:#52635b;font-size:13px;font-weight:800;}
   .coupon-option input{width:18px;height:18px;accent-color:var(--accent);}
   .coupon-option input:disabled{opacity:0.55;}
   .coupon-table-wrap{overflow-x:auto;margin:0 -4px;}
@@ -390,9 +415,11 @@
     .hero{padding:48px 20px 32px;}
     .hero h1{font-size:36px;}
     .container{padding-bottom:44px;}
-    .floating-cart-btn{right:16px;bottom:16px;width:56px;height:56px;}
+    .floating-cart-btn{right:16px;bottom:16px;min-width:112px;height:50px;}
     .drawer{width:360px;}
     .flash-sale-banner,.flash-sale-controls{align-items:flex-start;flex-direction:column;}
+    .flash-sale-banner{padding:20px;margin-bottom:30px;gap:8px;}
+    .flash-sale-banner strong{font-size:25px;}
     .flash-sale-toggle{width:100%;}
     .credentials-form button,.credentials-error{grid-column:span 1;}
     .product-form,.faq-admin-form{grid-template-columns:1fr;}
@@ -413,7 +440,7 @@
 <!-- STORE VIEW -->
 <div id="storeView">
   <div class="hero">
-    <h1>Snacks That Slap 🔥</h1>
+    <h1>Snack better. Together.</h1>
     <p>Fuel your grind between classes order now, pick up at break</p>
   </div>
 
@@ -435,7 +462,7 @@
   </div>
 </div>
 
-<button class="floating-cart-btn" onclick="openCart()">🛒<span id="floatingCartCount">0</span></button>
+<button class="floating-cart-btn" type="button" onclick="openCart()" aria-label="Open My Cart">My Cart 🛒 <span id="floatingCartCount">0</span></button>
 
 <!-- ADMIN VIEW -->
 <div id="adminView">
@@ -462,7 +489,7 @@
     </div>
   </div>
 
-  <div class="admin-section">
+  <div class="admin-section item-manager">
     <h2>➕ Add / Edit Item</h2>
     <div class="product-form">
       <input type="hidden" id="editId">
@@ -520,7 +547,7 @@
     </div>
   </div>
 
-  <div class="admin-section" id="couponManager">
+  <div class="admin-section coupon-manager" id="couponManager">
     <h2>🎟️ Coupon Manager</h2>
     <div class="faq-admin-form">
       <input type="hidden" id="couponEditId">
@@ -583,7 +610,7 @@
   <div class="drawer-items" id="cartItems"></div>
   <div class="drawer-footer">
     <div class="total-row"><span>Total</span><span id="cartTotal">AED 0.00</span></div>
-    <button class="checkout-btn" id="checkoutBtn" onclick="openCheckoutModal()">Checkout</button>
+    <button class="checkout-btn" id="checkoutBtn" onclick="openCheckoutModal()">Place Order</button>
   </div>
 </div>
 
@@ -592,14 +619,15 @@
   <div class="modal">
     <button class="close-x" onclick="closeModal('checkoutModal')">×</button>
     <h2>🎉 Confirm Order</h2>
+    <div class="error-msg" id="checkoutError" role="alert"></div>
     <input type="text" id="checkoutName" placeholder="Your name">
-    <input type="text" id="checkoutClass" placeholder="Class / Homeroom">
+    <input type="text" id="checkoutClass" placeholder="Class">
 
     <div class="coupon-box">
       <label for="checkoutCoupon">Coupon code</label>
       <div class="coupon-row">
         <input type="text" id="checkoutCoupon" placeholder="Enter code">
-        <button class="coupon-btn" onclick="applyCoupon()">Apply</button>
+        <button type="button" class="coupon-btn" onclick="applyCoupon()">Apply code</button>
       </div>
       <div id="couponMessage" class="coupon-message"></div>
     </div>
@@ -662,6 +690,18 @@
       </label>
       <div class="credentials-error" id="credentialsError" role="alert"></div>
       <button type="button" onclick="changeAdminCredentials()">Save Login Details</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteProductConfirm">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('deleteProductConfirm')">×</button>
+    <h2>Delete item?</h2>
+    <p class="flash-confirm-copy" id="deleteProductCopy">Are you sure you want to delete this item? This cannot be undone.</p>
+    <div class="flash-confirm-actions">
+      <button class="flash-cancel-btn" onclick="closeModal('deleteProductConfirm')">Cancel</button>
+      <button class="inventory-delete-btn" onclick="confirmDeleteProduct()">Yes, delete it</button>
     </div>
   </div>
 </div>
@@ -731,6 +771,7 @@ let activeFilter = "All";
 let isLoggedIn = false;
 let flashSale = JSON.parse(localStorage.getItem('sh_flash_sale')) === true;
 let adminHash = localStorage.getItem('sh_admin_hash') || ADMIN_HASH;
+let pendingDeleteProductId = null;
 const SHIPPING_FEE = 1;
 
 const formatCurrency = (value) => new Intl.NumberFormat('en-AE', {
@@ -879,10 +920,10 @@ function renderCart(){
           </span>
         </div>
         <div class="actions">
-          <button onclick="changeQty(${p.id}, -1)">-</button>
+          <button type="button" aria-label="Decrease ${p.name} quantity" onclick="changeQty(${p.id}, -1)">−</button>
           <span>${c.qty}</span>
-          <button onclick="changeQty(${p.id}, 1)">+</button>
-          <button class="remove" onclick="removeItem(${p.id})">❌</button>
+          <button type="button" aria-label="Increase ${p.name} quantity" onclick="changeQty(${p.id}, 1)">+</button>
+          <button type="button" class="remove" aria-label="Remove ${p.name} from cart" onclick="removeItem(${p.id})">×</button>
         </div>
       </div>
     `;
@@ -891,8 +932,143 @@ function renderCart(){
   document.getElementById('cartTotal').textContent = formatCurrency(total);
 }
 
+function openCart(){
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.getElementById('cartDrawer').classList.add('open');
+}
+
+function closeCart(){
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+}
+
+function renderCheckoutSummary(){
+  const summary = getDiscountSummary();
+  document.getElementById('checkoutSubtotal').textContent = formatCurrency(summary.subtotal);
+  document.getElementById('checkoutDiscount').textContent = `- ${formatCurrency(summary.discount)}`;
+  document.getElementById('checkoutShipping').textContent = formatCurrency(summary.shipping);
+  document.getElementById('checkoutTotal').textContent = formatCurrency(summary.total);
+}
+
+function openCheckoutModal(){
+  if(!cart.length) return;
+  activeCouponCode = '';
+  document.getElementById('checkoutCoupon').value = '';
+  document.getElementById('couponMessage').textContent = '';
+  document.getElementById('checkoutError').style.display = 'none';
+  renderCheckoutSummary();
+  document.getElementById('checkoutModal').classList.add('open');
+  document.getElementById('checkoutName').focus();
+}
+
+function applyCoupon(){
+  const code = document.getElementById('checkoutCoupon').value.trim().toUpperCase();
+  const message = document.getElementById('couponMessage');
+  const coupon = getCouponByCode(code);
+
+  if(!coupon){
+    activeCouponCode = '';
+    message.textContent = 'That coupon is not available.';
+    message.className = 'coupon-message error';
+    renderCheckoutSummary();
+    return;
+  }
+
+  activeCouponCode = coupon.code;
+  message.textContent = coupon.waivesShipping
+    ? 'Shipping is free.'
+    : `${coupon.percent}% discount applied.`;
+  message.className = 'coupon-message success';
+  renderCheckoutSummary();
+}
+
+async function placeOrder(){
+  const checkoutButton = document.querySelector('#checkoutModal button.submit');
+  const error = document.getElementById('checkoutError');
+  const summary = getDiscountSummary();
+  const items = cart.map(cartItem => {
+    const product = products.find(item => item.id === cartItem.id);
+    return product ? {
+      id: product.id,
+      name: product.name,
+      quantity: cartItem.qty,
+      price: getSalePrice(product.price)
+    } : null;
+  }).filter(Boolean);
+
+  if(!items.length) return;
+
+  error.style.display = 'none';
+  checkoutButton.disabled = true;
+  checkoutButton.textContent = 'Saving order...';
+
+  try {
+    const response = await fetch(apiUrl('/api/checkout'), {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items, total: Number(summary.total.toFixed(2))})
+    });
+    const result = await response.json();
+
+    if(!response.ok) throw new Error(result.error || 'Unable to save your order.');
+
+    cart = [];
+    activeCouponCode = '';
+    saveState();
+    closeModal('checkoutModal');
+    renderCart();
+    document.getElementById('successMessage').textContent = 'Your order was saved successfully.';
+    document.getElementById('orderSuccess').classList.add('show');
+  } catch (requestError) {
+    error.textContent = requestError.message;
+    error.style.display = 'block';
+  } finally {
+    checkoutButton.disabled = false;
+    checkoutButton.textContent = 'Place Order';
+  }
+}
+
+function closeOrderSuccess(){
+  document.getElementById('orderSuccess').classList.remove('show');
+  document.getElementById('successTitle').textContent = 'Order confirmed!';
+  document.getElementById('successMessage').textContent = 'Your snacks are being prepared.';
+}
+
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
+}
+
+function updateFlashSaleControls(){
+  const status = document.getElementById('flashSaleStatus');
+  const toggle = document.getElementById('flashSaleToggle');
+  if(!status || !toggle) return;
+  status.textContent = flashSale ? 'Flash sale is on' : 'Flash sale is off';
+  toggle.textContent = flashSale ? 'Turn Off' : 'Turn On';
+  toggle.classList.toggle('active', flashSale);
+}
+
+function requestFlashSaleToggle(){
+  const title = document.getElementById('flashConfirmTitle');
+  const copy = document.getElementById('flashConfirmCopy');
+  const confirmButton = document.querySelector('#flashSaleConfirm .flash-confirm-btn');
+  const turningOn = !flashSale;
+
+  title.textContent = turningOn ? 'Turn on flash sale?' : 'Turn off flash sale?';
+  copy.textContent = turningOn
+    ? 'All customer prices will be reduced by 50% and the sale banner will go live.'
+    : 'Customer prices will return to their regular amounts and the sale banner will be hidden.';
+  confirmButton.textContent = turningOn ? 'Yes, turn it on' : 'Yes, turn it off';
+  document.getElementById('flashSaleConfirm').classList.add('open');
+}
+
+function confirmFlashSaleToggle(){
+  flashSale = !flashSale;
+  saveState();
+  closeModal('flashSaleConfirm');
+  updateFlashSaleControls();
+  renderStore();
+  renderCart();
+  showCartToast(flashSale ? 'Flash sale is now on' : 'Flash sale is now off');
 }
 
 function openLoginModal(){
@@ -981,23 +1157,211 @@ function logout(){
 }
 
 function renderAdmin(){
+  updateFlashSaleControls();
   document.getElementById('statProducts').textContent = products.length;
   document.getElementById('statOrders').textContent = orders.length;
   document.getElementById('statRevenue').textContent = formatCurrency(orders.reduce((sum, order) => sum + order.total, 0));
   document.getElementById('statLowStock').textContent = products.filter(product => product.stock <= 5).length;
   renderFaqAdmin();
+  renderCouponAdmin();
   document.getElementById('productTable').innerHTML = products.map(product => `
     <tr>
       <td>${product.emoji} ${product.name}</td>
       <td>${product.category}</td>
       <td>${formatCurrency(getSalePrice(product.price))}</td>
       <td>${product.stock} left</td>
-      <td>Available</td>
+      <td class="table-actions">
+        <button type="button" class="edit-btn" onclick="editProduct(${product.id})">Edit Item</button>
+        <button type="button" class="inventory-delete-btn" onclick="requestDeleteProduct(${product.id})">Delete</button>
+      </td>
     </tr>
-  `).join('');
+  `).join('') || '<tr><td colspan="5">No inventory items yet</td></tr>';
   document.getElementById('orderTable').innerHTML = orders.map(order => `
     <tr><td>${order.orderNum}</td><td>${order.items}</td><td>${formatCurrency(order.total)}</td><td>${order.time}</td></tr>
   `).join('') || '<tr><td colspan="4">No orders yet</td></tr>';
+}
+
+function editProduct(id){
+  const product = products.find(item => item.id === id);
+  if(!product) return;
+
+  document.getElementById('editId').value = product.id;
+  document.getElementById('formName').value = product.name;
+  document.getElementById('formCategory').value = product.category;
+  document.getElementById('formPrice').value = product.price;
+  document.getElementById('formStock').value = product.stock;
+  document.getElementById('formImageUrl').value = product.image || '';
+  document.getElementById('formEmoji').value = product.emoji || '';
+  document.getElementById('formDesc').value = product.desc || '';
+  document.getElementById('removeImageField').style.display = product.image ? 'block' : 'none';
+  document.querySelector('.item-manager').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('formName').focus();
+}
+
+function requestDeleteProduct(id){
+  const product = products.find(item => item.id === id);
+  if(!product) return;
+  pendingDeleteProductId = id;
+  document.getElementById('deleteProductCopy').textContent = `Are you sure you want to delete "${product.name}"? This cannot be undone.`;
+  document.getElementById('deleteProductConfirm').classList.add('open');
+}
+
+function confirmDeleteProduct(){
+  const product = products.find(item => item.id === pendingDeleteProductId);
+  if(!product) return;
+
+  products = products.filter(item => item.id !== pendingDeleteProductId);
+  cart = cart.filter(item => products.some(productItem => productItem.id === item.id));
+  saveState();
+  pendingDeleteProductId = null;
+  closeModal('deleteProductConfirm');
+  renderStore();
+  renderCart();
+  renderAdmin();
+  document.getElementById('successTitle').textContent = 'Item deleted';
+  document.getElementById('successMessage').textContent = `${product.name} was removed from inventory.`;
+  document.getElementById('orderSuccess').classList.add('show');
+}
+
+function removeCurrentImage(){
+  document.getElementById('formImageUrl').value = '';
+  document.getElementById('formImage').value = '';
+  document.getElementById('removeImageField').style.display = 'none';
+}
+
+function saveProduct(){
+  const name = document.getElementById('formName').value.trim();
+  const category = document.getElementById('formCategory').value;
+  const price = Number(document.getElementById('formPrice').value);
+  const stock = Number(document.getElementById('formStock').value);
+  const emoji = document.getElementById('formEmoji').value.trim() || '🍿';
+  const desc = document.getElementById('formDesc').value.trim();
+  const imageUrl = document.getElementById('formImageUrl').value.trim();
+  const editId = Number(document.getElementById('editId').value);
+
+  if(!name || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0){
+    showCartToast('Enter a name, valid price, and stock quantity.');
+    return;
+  }
+
+  const productData = {name, category, price, stock, emoji, desc, image: imageUrl};
+  const existingProduct = products.find(product => product.id === editId);
+
+  if(existingProduct){
+    Object.assign(existingProduct, productData);
+  } else {
+    products.push({id: Date.now(), ...productData});
+  }
+
+  saveState();
+  clearProductForm();
+  renderStore();
+  renderAdmin();
+  showCartToast(existingProduct ? 'Item updated' : 'Item saved');
+}
+
+function clearProductForm(){
+  document.getElementById('editId').value = '';
+  ['formName', 'formPrice', 'formStock', 'formImageUrl', 'formEmoji', 'formDesc']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('formImage').value = '';
+  document.getElementById('formCategory').value = 'Sweet';
+  document.getElementById('removeImageField').style.display = 'none';
+}
+
+function renderCouponAdmin(){
+  document.getElementById('couponTable').innerHTML = coupons.map(coupon => `
+    <tr>
+      <td><strong>${coupon.code}</strong></td>
+      <td>${coupon.waivesShipping ? 'None' : `${coupon.percent}%`}</td>
+      <td>${coupon.waivesShipping ? 'Free' : 'AED 1.00'}</td>
+      <td>${coupon.enabled ? 'Active' : 'Disabled'}</td>
+      <td class="table-actions">
+        <button type="button" class="edit-btn" onclick="editCoupon(${coupon.id})">Edit</button>
+        <button type="button" class="del-btn" onclick="deleteCoupon(${coupon.id})">Delete</button>
+        <button type="button" class="coupon-toggle ${coupon.enabled ? 'enabled' : 'disabled'}" onclick="toggleCoupon(${coupon.id})">${coupon.enabled ? 'Disable' : 'Enable'}</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="5">No coupons yet</td></tr>';
+}
+
+function updateCouponDiscountField(){
+  const waivesShipping = document.getElementById('couponWaivesShipping').checked;
+  const percentInput = document.getElementById('couponPercent');
+  percentInput.disabled = waivesShipping;
+  if(waivesShipping) percentInput.value = '';
+}
+
+function saveCoupon(){
+  const code = document.getElementById('couponCode').value.trim().toUpperCase();
+  const waivesShipping = document.getElementById('couponWaivesShipping').checked;
+  const percentValue = Number(document.getElementById('couponPercent').value);
+  const editId = Number(document.getElementById('couponEditId').value);
+
+  if(!code || (!waivesShipping && (!Number.isInteger(percentValue) || percentValue < 1 || percentValue > 100))){
+    showCartToast(waivesShipping ? 'Enter a coupon code.' : 'Enter a discount from 1% to 100%.');
+    return;
+  }
+
+  const duplicate = coupons.find(coupon => coupon.code === code && coupon.id !== editId);
+  if(duplicate){
+    showCartToast('That coupon code already exists.');
+    return;
+  }
+
+  const couponData = {
+    code,
+    percent: waivesShipping ? 0 : percentValue,
+    waivesShipping,
+    enabled: true
+  };
+  const existingCoupon = coupons.find(coupon => coupon.id === editId);
+
+  if(existingCoupon){
+    Object.assign(existingCoupon, couponData);
+  } else {
+    coupons.push({id: Date.now(), ...couponData});
+  }
+
+  saveState();
+  clearCouponForm();
+  renderCouponAdmin();
+  showCartToast(existingCoupon ? 'Coupon updated' : 'Coupon saved');
+}
+
+function editCoupon(id){
+  const coupon = coupons.find(item => item.id === id);
+  if(!coupon) return;
+  document.getElementById('couponEditId').value = coupon.id;
+  document.getElementById('couponCode').value = coupon.code;
+  document.getElementById('couponPercent').value = coupon.waivesShipping ? '' : coupon.percent;
+  document.getElementById('couponWaivesShipping').checked = coupon.waivesShipping;
+  updateCouponDiscountField();
+  document.getElementById('couponCode').focus();
+}
+
+function deleteCoupon(id){
+  coupons = coupons.filter(coupon => coupon.id !== id);
+  if(activeCouponCode && !getCouponByCode(activeCouponCode)) activeCouponCode = '';
+  saveState();
+  renderCouponAdmin();
+}
+
+function toggleCoupon(id){
+  const coupon = coupons.find(item => item.id === id);
+  if(!coupon) return;
+  coupon.enabled = !coupon.enabled;
+  if(!coupon.enabled && activeCouponCode === coupon.code) activeCouponCode = '';
+  saveState();
+  renderCouponAdmin();
+}
+
+function clearCouponForm(){
+  document.getElementById('couponEditId').value = '';
+  document.getElementById('couponCode').value = '';
+  document.getElementById('couponPercent').value = '';
+  document.getElementById('couponWaivesShipping').checked = false;
+  updateCouponDiscountField();
 }
 
 function renderFaqAdmin(){

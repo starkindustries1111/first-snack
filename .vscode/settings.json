@@ -3,6 +3,10 @@
         "/^cd \"/Users/mayurk/Desktop/Real Website\" && python3 - <<'PY'\nfrom pathlib import Path\nimport re\nhtml = Path\\('snack-shop\\.html'\\)\\.read_text\\(\\)\nmatch = re\\.search\\(r'<script>\\(\\[\\\\s\\\\S\\]\\*\\)</script>', html\\)\nif not match:\n    raise SystemExit\\('No script tag found'\\)\nPath\\('/tmp/snaxify-check\\.js'\\)\\.write_text\\(match\\.group\\(1\\)\\)\nprint\\('Extracted script length:', len\\(match\\.group\\(1\\)\\)\\)\nPY\nnode --check /tmp/snaxify-check\\.js$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^sed '1,/<script>/d; /<\\\\/script>/,\\$d' frontend/index\\.html \\| node --check$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
