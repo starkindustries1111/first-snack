@@ -1,0 +1,12 @@
+{
+  "name": "snackhub-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SnackHub frontend and Vercel serverless API",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "npx vercel dev"
+  }
+}

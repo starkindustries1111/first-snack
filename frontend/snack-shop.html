@@ -665,6 +665,13 @@
 
 <script>
 /* ============ CONFIG ============ */
+const API_BASE_URL = (window.SNACKHUB_API_URL || '').replace(/\/$/, '');
+const API_MESSAGE_PATH = '/api/message';
+
+function apiUrl(path){
+  return `${API_BASE_URL}${path}`;
+}
+
 // Password is NOT stored in plain text — only its SHA-256 hash lives here.
 // To change creds: open browser console and run
 //   await sha256("yourNewUsername:yourNewPassword")
