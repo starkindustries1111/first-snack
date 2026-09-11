@@ -589,7 +589,7 @@
   <div class="admin-section">
     <h2>🧾 Recent Orders</h2>
     <table>
-      <thead><tr><th>Order #</th><th>Items</th><th>Total</th><th>Time</th></tr></thead>
+      <thead><tr><th>Order #</th><th>Name</th><th>Class</th><th>Items</th><th>Total</th><th>Time</th></tr></thead>
       <tbody id="orderTable"></tbody>
     </table>
   </div>
@@ -997,6 +997,13 @@ async function placeOrder(){
 
   if(!items.length) return;
 
+  const customer_name = document.getElementById('checkoutName').value.trim();
+  const customer_class = document.getElementById('checkoutClass').value.trim();
+  if(!customer_name || customer_name.length > 100 || !customer_class || customer_class.length > 50){
+    error.textContent = 'Enter your name (up to 100 characters) and class (up to 50 characters).';
+    error.style.display = 'block';
+    return;
+  }
   error.style.display = 'none';
   checkoutButton.disabled = true;
   checkoutButton.textContent = 'Saving order...';
@@ -1005,7 +1012,7 @@ async function placeOrder(){
     const response = await fetch(apiUrl('/api/checkout'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({items, total: Number(summary.total.toFixed(2))})
+      body: JSON.stringify({items, total: Number(summary.total.toFixed(2)), customer_name, customer_class})
     });
     const result = await response.json();
 
@@ -1096,6 +1103,8 @@ async function tryLogin(){
     if(!Array.isArray(result.orders)) throw new Error('Invalid order response.');
     orders = result.orders.map(order => ({
       orderNum: order.id,
+      customerName: order.customer_name || 'Not recorded',
+      customerClass: order.customer_class || 'Not recorded',
       items: Array.isArray(order.items)
         ? order.items.map(item => `${item.name} x ${item.quantity}`).join(', ')
         : String(order.items || ''),
@@ -1201,14 +1210,14 @@ function renderAdmin(){
   orderTable.replaceChildren();
   for(const order of orders){
     const row = document.createElement('tr');
-    for(const value of [order.orderNum, order.items, formatCurrency(order.total), order.time]){
+    for(const value of [order.orderNum, order.customerName, order.customerClass, order.items, formatCurrency(order.total), order.time]){
       const cell = document.createElement('td');
       cell.textContent = value;
       row.appendChild(cell);
     }
     orderTable.appendChild(row);
   }
-  if(!orders.length) orderTable.innerHTML = '<tr><td colspan="4">No orders yet</td></tr>';
+  if(!orders.length) orderTable.innerHTML = '<tr><td colspan="6">No orders yet</td></tr>';
 }
 
 function editProduct(id){

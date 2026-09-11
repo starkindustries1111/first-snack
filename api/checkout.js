@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
     }
     try {
       const ordersUrl = new URL('/rest/v1/orders', supabaseUrl);
-      ordersUrl.searchParams.set('select', 'id,items,total_amount');
+      ordersUrl.searchParams.set('select', 'id,items,total_amount,customer_name,customer_class');
       ordersUrl.searchParams.set('order', 'id.desc');
       const orders = [];
       const pageSize = 1000;
@@ -92,7 +92,12 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const { items, total } = req.body || {};
+  const { items, total, customer_name, customer_class } = req.body || {};
+  if (typeof customer_name !== 'string' || !customer_name.trim() || customer_name.trim().length > 100 ||
+      typeof customer_class !== 'string' || !customer_class.trim() || customer_class.trim().length > 50) {
+    sendJson(res, 400, { error: 'Enter your name (up to 100 characters) and class (up to 50 characters).' });
+    return;
+  }
   if (!Array.isArray(items) || items.length === 0 || typeof total !== 'number' || !Number.isFinite(total) || total < 0) {
     sendJson(res, 400, { error: 'Order items and a valid total are required.' });
     return;
@@ -108,7 +113,7 @@ module.exports = async (req, res) => {
         'Content-Type': 'application/json',
         Prefer: 'return=representation'
       },
-      body: JSON.stringify({ items, total_amount: total })
+      body: JSON.stringify({ items, total_amount: total, customer_name: customer_name.trim(), customer_class: customer_class.trim() })
     });
     const responseText = await response.text();
     let data = null;
