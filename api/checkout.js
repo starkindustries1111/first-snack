@@ -61,7 +61,7 @@ module.exports = async (req, res) => {
         'Content-Type': 'application/json',
         Prefer: 'return=representation'
       },
-      body: JSON.stringify({ items, total })
+      body: JSON.stringify({ items, total_amount: total })
     });
     const responseText = await response.text();
     let data = null;
