@@ -751,7 +751,7 @@ let products = JSON.parse(localStorage.getItem('sh_products')) || [
   {id:5, name:"Trail Mix", emoji:"🥜", price:2.50, stock:8, category:"Healthy", desc:"Nuts, seeds & fruit"},
   {id:6, name:"Popcorn Pack", emoji:"🍿", price:1.75, stock:18, category:"Salty", desc:"Butter popcorn"},
 ];
-let orders = JSON.parse(localStorage.getItem('sh_orders')) || [];
+let orders = [];
 let cart = JSON.parse(localStorage.getItem('sh_cart')) || [];
 let faqs = JSON.parse(localStorage.getItem('sh_faqs')) || [
   {id:1, question:'How do you deliver?', answer:'We deliver straight to your class in break.'},
@@ -786,7 +786,6 @@ function getSalePrice(price){
 
 function saveState(){
   localStorage.setItem('sh_products', JSON.stringify(products));
-  localStorage.setItem('sh_orders', JSON.stringify(orders));
   localStorage.setItem('sh_cart', JSON.stringify(cart));
   localStorage.setItem('sh_faqs', JSON.stringify(faqs));
   localStorage.setItem('sh_coupons', JSON.stringify(coupons));
@@ -1078,17 +1077,35 @@ function openLoginModal(){
 }
 
 function openCredentialsModal(){
-  document.getElementById('credentialsError').textContent = '';
-  document.getElementById('credentialsModal').classList.add('open');
-  document.getElementById('currentUsername').focus();
+  alert('Admin login details are now managed securely in Vercel. Update ADMIN_USERNAME and ADMIN_PASSWORD in your backend project settings, then redeploy.');
 }
 
 async function tryLogin(){
   const username = document.getElementById('loginUser').value;
   const password = document.getElementById('loginPass').value;
-  const valid = await sha256(`${username}:${password}`) === adminHash;
-  if(!valid){
-    document.getElementById('loginError').style.display = 'block';
+  const loginError = document.getElementById('loginError');
+  loginError.style.display = 'none';
+  try {
+    const credentials = btoa(String.fromCharCode(...new TextEncoder().encode(`${username}:${password}`)));
+    const response = await fetch(apiUrl('/api/checkout'), {
+      headers: {Authorization: `Basic ${credentials}`},
+      cache: 'no-store'
+    });
+    const result = await response.json();
+    if(!response.ok) throw new Error(result.error || 'Unable to load orders.');
+    if(!Array.isArray(result.orders)) throw new Error('Invalid order response.');
+    orders = result.orders.map(order => ({
+      orderNum: order.id,
+      items: Array.isArray(order.items)
+        ? order.items.map(item => `${item.name} x ${item.quantity}`).join(', ')
+        : String(order.items || ''),
+      total: Number(order.total_amount) || 0,
+      time: 'Not available'
+    }));
+  } catch (error) {
+    loginError.textContent = error instanceof TypeError
+      ? 'The admin service could not be reached. Please try again.' : error.message;
+    loginError.style.display = 'block';
     return;
   }
   isLoggedIn = true;
@@ -1155,6 +1172,8 @@ function showAdmin(){
 
 function logout(){
   isLoggedIn = false;
+  orders = [];
+  document.getElementById('orderTable').replaceChildren();
   showStore();
 }
 
@@ -1178,9 +1197,18 @@ function renderAdmin(){
       </td>
     </tr>
   `).join('') || '<tr><td colspan="5">No inventory items yet</td></tr>';
-  document.getElementById('orderTable').innerHTML = orders.map(order => `
-    <tr><td>${order.orderNum}</td><td>${order.items}</td><td>${formatCurrency(order.total)}</td><td>${order.time}</td></tr>
-  `).join('') || '<tr><td colspan="4">No orders yet</td></tr>';
+  const orderTable = document.getElementById('orderTable');
+  orderTable.replaceChildren();
+  for(const order of orders){
+    const row = document.createElement('tr');
+    for(const value of [order.orderNum, order.items, formatCurrency(order.total), order.time]){
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.appendChild(cell);
+    }
+    orderTable.appendChild(row);
+  }
+  if(!orders.length) orderTable.innerHTML = '<tr><td colspan="4">No orders yet</td></tr>';
 }
 
 function editProduct(id){

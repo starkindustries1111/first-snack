@@ -14,8 +14,8 @@ function setCorsHeaders(req, res) {
   } else if (!requestOrigin) {
     res.setHeader('Access-Control-Allow-Origin', '*');
   }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Vary', 'Origin');
 }
 
@@ -34,8 +34,55 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'no-store');
+    const username = process.env.ADMIN_USERNAME;
+    const password = process.env.ADMIN_PASSWORD;
+    if (!username || !password) {
+      sendJson(res, 503, { error: 'Set ADMIN_USERNAME and ADMIN_PASSWORD in the backend environment to view orders.' });
+      return;
+    }
+    const { createHash, timingSafeEqual } = require('node:crypto');
+    const expected = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
+    const digest = value => createHash('sha256').update(value).digest();
+    if (!timingSafeEqual(digest(req.headers.authorization || ''), digest(expected))) {
+      sendJson(res, 401, { error: 'The admin username or password is incorrect.' });
+      return;
+    }
+    const readKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !readKey) {
+      sendJson(res, 503, { error: 'Configure the backend SUPABASE_SERVICE_ROLE_KEY to load orders.' });
+      return;
+    }
+    try {
+      const ordersUrl = new URL('/rest/v1/orders', supabaseUrl);
+      ordersUrl.searchParams.set('select', 'id,items,total_amount');
+      ordersUrl.searchParams.set('order', 'id.desc');
+      const orders = [];
+      const pageSize = 1000;
+      for (let offset = 0; ;) {
+        ordersUrl.searchParams.set('offset', String(offset));
+        ordersUrl.searchParams.set('limit', String(pageSize));
+        const response = await fetch(ordersUrl, {
+          headers: { apikey: readKey, Authorization: `Bearer ${readKey}` }
+        });
+        if (!response.ok) throw new Error(`Order lookup returned ${response.status}`);
+        const page = await response.json();
+        if (!Array.isArray(page)) throw new Error('Invalid order response');
+        orders.push(...page);
+        if (page.length === 0) break;
+        offset += page.length;
+      }
+      sendJson(res, 200, { orders });
+    } catch (error) {
+      console.error('Admin order lookup failed:', error.message);
+      sendJson(res, 502, { error: 'Unable to load orders. Please try logging in again.' });
+    }
+    return;
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST, OPTIONS');
+    res.setHeader('Allow', 'GET, POST, OPTIONS');
     sendJson(res, 405, { error: 'Method not allowed' });
     return;
   }
