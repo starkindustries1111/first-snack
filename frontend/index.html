@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SnackHub 🍿</title>
+<title>Snaxify 🍿 | Fresh Snacks &amp; Quick Break Pickup</title>
+<meta name="description" content="Snaxify delivers tasty chips, sweets, refreshing drinks, and healthy snacks right between classes. Order ahead for quick break pickup.">
+<link rel="canonical" href="https://backendsnaxify.vercel.app/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍿</text></svg>">
 <style>
   :root{
     --primary:#c96857;
@@ -16,6 +19,103 @@
     --line:#e8e4da;
     --shadow:0 10px 28px rgba(45,64,57,0.08);
   }
+  [data-theme="dark"]{
+    --primary:#e07a6a;
+    --secondary:#d9bd79;
+    --accent:#6fb89e;
+    --dark:#e8e4da;
+    --light:#1a1e1c;
+    --surface:#252b28;
+    --muted:#a0a8a3;
+    --line:#3a423d;
+    --shadow:0 10px 28px rgba(0,0,0,0.3);
+  }
+  [data-theme="dark"] body{background:var(--light);color:var(--dark);}
+  [data-theme="dark"] .drawer{background:#252b28;}
+  [data-theme="dark"] .cart-item{border-bottom-color:var(--line);}
+  [data-theme="dark"] .emoji-banner,
+  [data-theme="dark"] .card:nth-child(2n) .emoji-banner,
+  [data-theme="dark"] .card:nth-child(3n) .emoji-banner{background:#2f3834;}
+  [data-theme="dark"] .flash-sale-banner{background:#3a3224;border-color:#6b5a2e;color:#d9c88a;}
+  [data-theme="dark"] .flash-sale-banner span{color:#b8a76a;}
+  [data-theme="dark"] .coupon-box{background:#2a3530;border-color:#3a4f42;}
+  [data-theme="dark"] .coupon-box::before{color:#3a4f42;}
+  [data-theme="dark"] .faq-item{background:#2a3530;border-color:var(--line);}
+  [data-theme="dark"] .product-form{background:#2a3530;border-color:var(--line);}
+  [data-theme="dark"] .product-form input,
+  [data-theme="dark"] .product-form select{background:#1e2622;border-color:var(--line);color:var(--dark);}
+  [data-theme="dark"] .modal{background:var(--surface);border-color:var(--line);}
+  [data-theme="dark"] .modal input,
+  [data-theme="dark"] .modal select{background:#1e2622;border-color:var(--line);color:var(--dark);}
+  [data-theme="dark"] .faq-admin-form input,
+  [data-theme="dark"] .faq-admin-form textarea{background:#1e2622;border-color:var(--line);color:var(--dark);}
+  [data-theme="dark"] .admin-section{background:var(--surface);border-color:var(--line);}
+  [data-theme="dark"] .item-manager{background:#2a2820;border-color:#4a4530;}
+  [data-theme="dark"] .coupon-manager{background:#222e28;border-color:#3a5040;}
+  [data-theme="dark"] .flash-sale-manager{background:#2a2820;border-color:#4a4530;}
+  [data-theme="dark"] th{color:var(--muted);}
+  [data-theme="dark"] td{border-bottom-color:var(--line);}
+  [data-theme="dark"] th{border-bottom-color:var(--line);}
+  /* Theme toggle button */
+  .theme-toggle{
+    background:var(--dark);color:white;border:none;font-size:13px;cursor:pointer;
+    padding:8px 16px;border-radius:999px;font-weight:700;
+    transition:background 0.2s,transform 0.2s;
+    white-space:nowrap;
+  }
+  .theme-toggle:hover{background:var(--accent);transform:translateY(-1px);}
+  [data-theme="dark"] .theme-toggle{background:var(--accent);}
+  [data-theme="dark"] .theme-toggle:hover{background:#8cd4b8;}
+
+  /* RICH TOOLTIPS */
+  [data-tooltip]{
+    position:relative;
+    cursor:pointer;
+  }
+  [data-tooltip]::after{
+    content:attr(data-tooltip);
+    position:absolute;
+    bottom:calc(100% + 8px);
+    left:50%;
+    transform:translateX(-50%) translateY(4px);
+    background:#1c2723;
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    line-height:1.35;
+    padding:6px 10px;
+    border-radius:8px;
+    white-space:nowrap;
+    box-shadow:0 8px 18px rgba(0,0,0,0.22);
+    pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index:999;
+  }
+  [data-tooltip]::before{
+    content:'';
+    position:absolute;
+    bottom:calc(100% + 2px);
+    left:50%;
+    transform:translateX(-50%) translateY(4px);
+    border:5px solid transparent;
+    border-top-color:#1c2723;
+    pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index:999;
+  }
+  [data-tooltip]:hover::after,
+  [data-tooltip]:hover::before{
+    opacity:1;
+    visibility:visible;
+    transform:translateX(-50%) translateY(0);
+  }
+  [data-theme="dark"] [data-tooltip]::after{background:#3a4a42;color:#fff;}
+  [data-theme="dark"] [data-tooltip]::before{border-top-color:#3a4a42;}
+
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Avenir Next','Trebuchet MS',sans-serif;}
   body{background:var(--light);color:var(--dark);min-height:100vh;}
   @keyframes pageFadeIn{
@@ -50,7 +150,7 @@
   /* NAVBAR */
   nav{
     background:var(--surface);
-    padding:18px 32px;
+    padding:16px 28px;
     display:flex;
     justify-content:space-between;
     align-items:center;
@@ -58,7 +158,9 @@
     top:0;
     z-index:100;
     border-bottom:1px solid var(--line);
+    backdrop-filter:blur(8px);
   }
+  nav .nav-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
   nav .logo{
     font-size:22px;
     font-weight:900;
@@ -68,20 +170,34 @@
     gap:8px;
     cursor:pointer;
   }
-  nav .nav-right{display:flex;align-items:center;gap:16px;}
+  .nav-timing-badge{
+    font-size:12px;
+    color:var(--accent);
+    font-weight:800;
+    letter-spacing:0.02em;
+    background:rgba(92,146,127,0.1);
+    border:1px solid rgba(92,146,127,0.25);
+    padding:6px 14px;
+    border-radius:999px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  nav .nav-right{display:flex;align-items:center;gap:12px;}
   nav button{
     background:var(--dark);
     color:white;
     border:none;
-    padding:10px 18px;
+    padding:9px 16px;
     border-radius:10px;
     font-weight:700;
     cursor:pointer;
     transition:background 0.2s, transform 0.2s;
-    font-size:14px;
+    font-size:13px;
   }
   nav button:hover{background:var(--accent);transform:translateY(-1px);}
   .admin-link{background:transparent!important;color:var(--muted)!important;font-size:13px!important;text-decoration:none;}
+  .admin-link:hover{color:var(--dark)!important;}
 
   .floating-cart-btn{
     position:fixed;right:28px;bottom:28px;z-index:150;
@@ -101,16 +217,46 @@
   /* HERO */
   .hero{
     text-align:left;max-width:1200px;margin:0 auto;
-    padding:68px 20px 42px;
+    padding:68px 20px 36px;
   }
   .hero h1{
     font-size:clamp(34px,5vw,54px);
     font-weight:900;
-    color:var(--dark);letter-spacing:-0.02em;margin-bottom:12px;
+    letter-spacing:-0.02em;margin-bottom:12px;
   }
-  .hero p{font-size:17px;color:var(--muted);font-weight:500;max-width:540px;line-height:1.6;}
+  .hero p{font-size:17px;color:var(--muted);font-weight:500;max-width:560px;line-height:1.6;margin-bottom:20px;}
+  .hero-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:30px;}
+  .hero-cta{
+    background:var(--accent);color:white;text-decoration:none;
+    padding:13px 26px;border-radius:12px;font-weight:800;font-size:15px;
+    display:inline-flex;align-items:center;gap:8px;
+    box-shadow:0 6px 18px rgba(92,146,127,0.28);
+    transition:transform 0.2s, background 0.2s;
+    border:none;cursor:pointer;
+  }
+  .hero-cta:hover{background:#05b989;transform:translateY(-2px);}
+  .hero-cta-secondary{
+    background:var(--surface);color:var(--dark);text-decoration:none;
+    padding:12px 22px;border-radius:12px;font-weight:800;font-size:14px;
+    border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px;
+    transition:transform 0.2s, border-color 0.2s;cursor:pointer;
+  }
+  .hero-cta-secondary:hover{border-color:var(--accent);transform:translateY(-1px);}
+
+  /* CLEAR PRICING BAR */
+  .pricing-bar{
+    max-width:1160px;margin:0 auto 28px;padding:16px 22px;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    display:flex;justify-content:space-around;align-items:center;gap:16px;
+    box-shadow:var(--shadow);flex-wrap:wrap;
+  }
+  .pricing-item{display:flex;align-items:center;gap:10px;}
+  .pricing-item-icon{font-size:24px;}
+  .pricing-item-title{font-size:13px;font-weight:900;color:var(--dark);}
+  .pricing-item-desc{font-size:12px;color:var(--muted);font-weight:600;}
+
   .flash-sale-banner{
-    max-width:1160px;margin:0 auto 38px;padding:24px 28px;
+    max-width:1160px;margin:0 auto 32px;padding:22px 26px;
     background:#f1e5c5;border:2px solid #d5b85f;border-radius:16px;
     display:flex;align-items:center;justify-content:space-between;gap:24px;
     color:#5d4a22;box-shadow:0 10px 24px rgba(120,91,31,0.12);
@@ -231,9 +377,15 @@
   .modal-overlay{
     position:fixed;inset:0;background:rgba(45,64,57,0.48);z-index:300;
     display:none;align-items:center;justify-content:center;padding:20px;
+    opacity:0;transition:opacity 0.25s ease;
   }
-  .modal-overlay.open{display:flex;}
-  #checkoutModal.open .modal{animation:modalFadeIn 0.3s ease both;}
+  .modal-overlay.open{
+    display:flex;opacity:1;animation:overlayFadeIn 0.25s ease forwards;
+  }
+  #checkoutModal.open .modal,
+  #loginModal.open .modal,
+  #flashSaleConfirm.open .modal,
+  #deleteProductConfirm.open .modal{animation:modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;}
   .modal{
     background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:30px;max-width:420px;width:100%;
     box-shadow:var(--shadow);position:relative;
@@ -395,6 +547,17 @@
   .faq-question{font-weight:800;margin-bottom:6px;color:var(--dark);}
   .faq-answer{color:var(--muted);line-height:1.6;}
 
+  .tos-section{max-width:1100px;margin:0 auto 60px;padding:0 20px;}
+  .tos-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:32px 28px;box-shadow:var(--shadow);color:var(--dark);}
+  .tos-box h2{font-size:28px;margin-bottom:8px;}
+  .tos-meta{font-size:13px;color:var(--muted);margin-bottom:20px;font-weight:600;}
+  .tos-intro{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px;}
+  .tos-list{display:grid;gap:18px;}
+  .tos-item{border-left:3px solid var(--accent);padding-left:16px;}
+  .tos-item h3{font-size:16px;font-weight:800;margin-bottom:6px;color:var(--dark);}
+  .tos-item p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:4px;}
+  [data-theme="dark"] .tos-item{border-left-color:var(--accent);}
+
   .faq-admin-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .faq-admin-form textarea{min-height:90px;resize:vertical;}
   .faq-admin-form input,.faq-admin-form textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;}
@@ -409,31 +572,71 @@
     padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700;
   }
 
-  @media(max-width:600px){
-    nav{padding:16px 20px;}
-    nav .logo{font-size:20px;}
-    .hero{padding:48px 20px 32px;}
-    .hero h1{font-size:36px;}
-    .container{padding-bottom:44px;}
+  @media(max-width:900px){
+    nav{padding:14px 20px;}
+    .nav-timing-badge{font-size:11px;padding:5px 10px;}
+    .hero{padding:54px 20px 36px;}
+    .hero h1{font-size:42px;}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px;}
+  }
+
+  @media(max-width:640px){
+    nav{padding:12px 16px;}
+    nav .logo{font-size:19px;}
+    .nav-timing-badge{display:none;}
+    .theme-toggle{padding:7px 12px;font-size:12px;}
+    .hero{padding:42px 16px 28px;}
+    .hero h1{font-size:32px;}
+    .hero p{font-size:15px;}
+    .container{padding:0 16px 44px;}
     .floating-cart-btn{right:16px;bottom:16px;min-width:112px;height:50px;}
-    .drawer{width:360px;}
+    .drawer{width:100%;max-width:360px;}
     .flash-sale-banner,.flash-sale-controls{align-items:flex-start;flex-direction:column;}
-    .flash-sale-banner{padding:20px;margin-bottom:30px;gap:8px;}
-    .flash-sale-banner strong{font-size:25px;}
+    .flash-sale-banner{padding:18px;margin-bottom:26px;gap:8px;}
+    .flash-sale-banner strong{font-size:24px;}
     .flash-sale-toggle{width:100%;}
     .credentials-form button,.credentials-error{grid-column:span 1;}
     .product-form,.faq-admin-form{grid-template-columns:1fr;}
     .product-form button,.faq-admin-form button{grid-column:span 1;}
+    .tos-box{padding:22px 18px;}
+    .tos-box h2{font-size:24px;}
   }
+
+  /* SHOP CLOSED OVERLAY */
+  .shop-closed-wrap{position:relative;}
+  .shop-closed-wrap.closed .grid,
+  .shop-closed-wrap.closed .filters{filter:blur(6px) grayscale(0.3);pointer-events:none;user-select:none;}
+  .shop-closed-overlay{
+    display:none;position:absolute;inset:0;z-index:10;
+    background:rgba(245,242,234,0.82);
+    display:none;align-items:center;justify-content:center;flex-direction:column;
+    border-radius:16px;
+  }
+  [data-theme="dark"] .shop-closed-overlay{background:rgba(26,30,28,0.85);}
+  .shop-closed-wrap.closed .shop-closed-overlay{display:flex;}
+  .shop-closed-overlay .closed-icon{font-size:56px;margin-bottom:12px;}
+  .shop-closed-overlay h2{font-size:clamp(22px,3.5vw,32px);color:var(--dark);margin-bottom:8px;text-align:center;}
+  .shop-closed-overlay p{color:var(--muted);font-size:15px;font-weight:600;text-align:center;line-height:1.5;}
+  .shop-status-manager{border-color:#c9b3b3;background:#fdf6f6;}
+  [data-theme="dark"] .shop-status-manager{background:#2a2224;border-color:#4a3535;}
+  .shop-status-manager h2{color:#6b3a3a;}
+  [data-theme="dark"] .shop-status-manager h2{color:#e0a0a0;}
+  .shop-status-info{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5;}
 </style>
 </head>
 <body>
 
 <!-- NAVBAR -->
-<nav>
-  <div class="logo" onclick="showStore()">🍿 Snaxify</div>
+<nav role="navigation" aria-label="Main Navigation">
+  <div class="nav-left">
+    <button class="logo" onclick="showStore()" style="background:none;border:none;padding:0;font:inherit;" aria-label="Snaxify Home">🍿 Snaxify</button>
+    <span class="nav-timing-badge" data-tooltip="Abu Dhabi Local Time (UTC+4)">
+      🕐 Sun–Thu 3–8 PM <span style="opacity:0.4;">•</span> Fri &amp; Sat 24h
+    </span>
+  </div>
   <div class="nav-right">
-    <button class="admin-link" onclick="openLoginModal()">Admin</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" data-tooltip="Switch light/dark appearance" aria-label="Toggle dark/light mode">Change Theme</button>
+    <button class="admin-link" onclick="openLoginModal()" data-tooltip="Admin portal access">Admin</button>
   </div>
 </nav>
 
@@ -441,7 +644,35 @@
 <div id="storeView">
   <div class="hero">
     <h1>Snack better. Together.</h1>
-    <p>Fuel your grind between classes order now, pick up at break.</p>
+    <p>Fuel your grind between classes — order ahead and pick up fresh snacks right at break.</p>
+    <div class="hero-actions">
+      <a href="#productGrid" class="hero-cta" data-tooltip="Browse all snacks and drinks">Order Snacks Now 🍿</a>
+      <button type="button" class="hero-cta-secondary" onclick="openCart()" data-tooltip="View snacks currently in your cart">View Cart 🛒</button>
+    </div>
+  </div>
+
+  <div class="pricing-bar">
+    <div class="pricing-item">
+      <div class="pricing-item-icon">🏷️</div>
+      <div>
+        <div class="pricing-item-title">Transparent Pricing</div>
+        <div class="pricing-item-desc">Snacks from AED 1.00 • No surprise fees</div>
+      </div>
+    </div>
+    <div class="pricing-item">
+      <div class="pricing-item-icon">🎟️</div>
+      <div>
+        <div class="pricing-item-title">Promo Coupons</div>
+        <div class="pricing-item-desc">Apply codes for extra savings or free shipping</div>
+      </div>
+    </div>
+    <div class="pricing-item">
+      <div class="pricing-item-icon">⚡</div>
+      <div>
+        <div class="pricing-item-title">Flash Sale Ready</div>
+        <div class="pricing-item-desc">Automatic 50% discounts when live</div>
+      </div>
+    </div>
   </div>
 
   <div class="flash-sale-banner" id="flashSaleBanner" hidden>
@@ -449,7 +680,12 @@
     <span>Limited-time prices, same great snacks.</span>
   </div>
 
-  <div class="container">
+  <div class="container shop-closed-wrap" id="shopClosedWrap">
+    <div class="shop-closed-overlay" id="shopClosedOverlay">
+      <div class="closed-icon">🔒</div>
+      <h2>Shop's closed</h2>
+      <p>Opens 3 PM and closes 8 PM<br>(Sunday – Thursday, UTC+4)</p>
+    </div>
     <div class="filters" id="filterBar"></div>
     <div class="grid" id="productGrid"></div>
   </div>
@@ -458,6 +694,57 @@
     <div class="faq-box">
       <h2>❓ FAQ</h2>
       <div class="faq-list" id="faqList"></div>
+    </div>
+  </div>
+
+  <div class="tos-section">
+    <div class="tos-box">
+      <h2>📄 Terms of Service</h2>
+      <div class="tos-meta">Effective Date: October 1st 2026 &nbsp;|&nbsp; Website: Snaxify ("we," "us," "our")</div>
+      <p class="tos-intro">By accessing or purchasing from this website, you agree to the following Terms of Service. If you don't agree, please don't use the site.</p>
+      <div class="tos-list">
+        <div class="tos-item">
+          <h3>1. Overview</h3>
+          <p>We sell snack food products online. All orders placed through this site are subject to these Terms.</p>
+        </div>
+        <div class="tos-item">
+          <h3>2. Products &amp; Pricing</h3>
+          <p>All product descriptions, images, and prices are subject to change without notice.</p>
+          <p>We reserve the right to limit quantities or refuse any order.</p>
+          <p>Prices are listed in AED and do not include applicable taxes or shipping unless stated.</p>
+        </div>
+        <div class="tos-item">
+          <h3>3. Orders &amp; Payment</h3>
+          <p>We reserve the right to cancel any order due to suspected fraud, pricing errors, or stock issues, in which case you'll be refunded for that order.</p>
+        </div>
+        <div class="tos-item">
+          <h3>4. No Refunds Policy</h3>
+          <p>All sales are final. Due to the nature of food products, we do not offer refunds, returns, or exchanges once an order has been placed, except in the following cases:</p>
+          <p>• The item received is significantly different from what was ordered (e.g., wrong product shipped).</p>
+          <p>• The product arrived damaged or spoiled due to a shipping/handling error on our part.</p>
+        </div>
+        <div class="tos-item">
+          <h3>5. Allergens &amp; Ingredients</h3>
+          <p>Product listings include ingredient information where available, but our facility may process products that come into contact with common allergens (nuts, dairy, gluten, soy, etc.).</p>
+          <p>It is your responsibility to review ingredients before purchasing. We are not liable for allergic reactions resulting from consumption of our products.</p>
+        </div>
+        <div class="tos-item">
+          <h3>6. Limitation of Liability</h3>
+          <p>To the fullest extent permitted by law, Snaxify LLP (Limited Liability Partners) is not liable for any indirect, incidental, or consequential damages arising from the use or consumption of our products. Our total liability for any claim is limited to the amount you paid for the product in question.</p>
+        </div>
+        <div class="tos-item">
+          <h3>7. Intellectual Property</h3>
+          <p>All content on this site (logos, images, text, branding) is owned by us and may not be used without permission.</p>
+        </div>
+        <div class="tos-item">
+          <h3>8. Changes to These Terms</h3>
+          <p>We may update these Terms at any time. Continued use of the site after changes are posted means you accept the updated Terms.</p>
+        </div>
+        <div class="tos-item">
+          <h3>9. Governing Law</h3>
+          <p>These Terms are governed by the laws of Dubai, United Arab Emirates, without regard to conflict of law principles.</p>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -486,6 +773,17 @@
         <p>Reduce every customer price by 50% and announce it on the store.</p>
       </div>
       <button class="flash-sale-toggle" id="flashSaleToggle" onclick="requestFlashSaleToggle()">Turn On</button>
+    </div>
+  </div>
+
+  <div class="admin-section shop-status-manager">
+    <h2>🔒 Shop Open / Close</h2>
+    <div class="flash-sale-controls">
+      <div>
+        <strong id="shopStatusText">Shop is open</strong>
+        <p class="shop-status-info" id="shopStatusInfo">Schedule: Sun–Thu open 3 PM – 8 PM (UTC+4). Fri & Sat open 24 hrs.</p>
+      </div>
+      <button class="flash-sale-toggle" id="shopCloseToggle" onclick="toggleShopManual()">Close Shop</button>
     </div>
   </div>
 
@@ -593,19 +891,14 @@
       <tbody id="orderTable"></tbody>
     </table>
   </div>
-
-  <div class="admin-section">
-    <h2>🔐 Update Login Details</h2>
-    <button class="flash-sale-toggle" onclick="openCredentialsModal()">Update Username or Password</button>
-  </div>
 </div>
 
 <!-- CART DRAWER -->
-<div class="drawer-overlay" id="drawerOverlay" onclick="closeCart()"></div>
-<div class="drawer" id="cartDrawer">
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeCart()" aria-hidden="true"></div>
+<div class="drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Shopping Cart">
   <div class="drawer-header">
     <h2>Your Cart</h2>
-    <button class="close-btn" onclick="closeCart()">×</button>
+    <button class="close-btn" onclick="closeCart()" aria-label="Close cart">×</button>
   </div>
   <div class="drawer-items" id="cartItems"></div>
   <div class="drawer-footer">
@@ -615,13 +908,15 @@
 </div>
 
 <!-- CHECKOUT MODAL -->
-<div class="modal-overlay" id="checkoutModal">
+<div class="modal-overlay" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
   <div class="modal">
-    <button class="close-x" onclick="closeModal('checkoutModal')">×</button>
-    <h2>🎉 Confirm Order</h2>
+    <button class="close-x" onclick="closeModal('checkoutModal')" aria-label="Close checkout modal">×</button>
+    <h2 id="checkoutTitle">🎉 Confirm Order</h2>
     <div class="error-msg" id="checkoutError" role="alert"></div>
-    <input type="text" id="checkoutName" placeholder="Your name">
-    <input type="text" id="checkoutClass" placeholder="Class">
+    <label for="checkoutName" style="font-size:12px;font-weight:700;margin-bottom:4px;display:block;">Your Full Name</label>
+    <input type="text" id="checkoutName" placeholder="e.g. Alex Smith" autocomplete="name">
+    <label for="checkoutClass" style="font-size:12px;font-weight:700;margin-bottom:4px;display:block;">Class / Room</label>
+    <input type="text" id="checkoutClass" placeholder="e.g. 10-A">
 
     <div class="coupon-box">
       <label for="checkoutCoupon">Coupon code</label>
@@ -644,13 +939,15 @@
 </div>
 
 <!-- LOGIN MODAL -->
-<div class="modal-overlay" id="loginModal">
+<div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
   <div class="modal">
-    <button class="close-x" onclick="closeModal('loginModal')">×</button>
-    <h2>🔐 Admin Login</h2>
-    <div class="error-msg" id="loginError">Wrong username or password</div>
-    <input type="text" id="loginUser" placeholder="Username">
-    <input type="password" id="loginPass" placeholder="Password">
+    <button class="close-x" onclick="closeModal('loginModal')" aria-label="Close login modal">×</button>
+    <h2 id="loginTitle">🔐 Admin Login</h2>
+    <div class="error-msg" id="loginError" role="alert">Wrong username or password</div>
+    <label for="loginUser" style="font-size:12px;font-weight:700;margin-bottom:4px;display:block;">Username</label>
+    <input type="text" id="loginUser" placeholder="Username" autocomplete="username">
+    <label for="loginPass" style="font-size:12px;font-weight:700;margin-bottom:4px;display:block;">Password</label>
+    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
     <button class="submit" onclick="tryLogin()">Log In</button>
   </div>
 </div>
@@ -663,33 +960,6 @@
     <div class="flash-confirm-actions">
       <button class="flash-cancel-btn" onclick="closeModal('flashSaleConfirm')">Cancel</button>
       <button class="flash-confirm-btn" onclick="confirmFlashSaleToggle()">Yes, continue</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="credentialsModal">
-  <div class="modal">
-    <button class="close-x" onclick="closeModal('credentialsModal')">×</button>
-    <h2>🔐 Update Login Details</h2>
-    <p class="credentials-help">Enter your current login first. Leave the new username or password blank to keep it unchanged.</p>
-    <div class="credentials-form">
-      <label for="currentUsername">Current username
-        <input type="text" id="currentUsername" autocomplete="username">
-      </label>
-      <label for="currentPassword">Current password
-        <input type="password" id="currentPassword" autocomplete="current-password">
-      </label>
-      <label for="newUsername">New username <span>(optional)</span>
-        <input type="text" id="newUsername" autocomplete="username">
-      </label>
-      <label for="newPassword">New password <span>(optional)</span>
-        <input type="password" id="newPassword" autocomplete="new-password">
-      </label>
-      <label for="confirmPassword">Confirm new password
-        <input type="password" id="confirmPassword" autocomplete="new-password">
-      </label>
-      <div class="credentials-error" id="credentialsError" role="alert"></div>
-      <button type="button" onclick="changeAdminCredentials()">Save Login Details</button>
     </div>
   </div>
 </div>
@@ -720,6 +990,25 @@
 </div>
 
 <script>
+/* ============ THEME TOGGLE ============ */
+(function(){
+  const saved = localStorage.getItem('sh_theme');
+  if(saved === 'dark'){
+    document.documentElement.setAttribute('data-theme','dark');
+  }
+})();
+function toggleTheme(){
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  if(isDark){
+    html.removeAttribute('data-theme');
+    localStorage.setItem('sh_theme','light');
+  } else {
+    html.setAttribute('data-theme','dark');
+    localStorage.setItem('sh_theme','dark');
+  }
+}
+
 /* ============ CONFIG ============ */
 // Your live Vercel backend address
 window.SNACKHUB_API_URL = 'https://backendsnaxify.vercel.app';
@@ -729,17 +1018,6 @@ const API_MESSAGE_PATH = '/api/message';
 
 function apiUrl(path){
   return `${API_BASE_URL}${path}`;
-}
-
-// Password is NOT stored in plain text — only its SHA-256 hash lives here.
-// To change creds: open browser console and run
-//   await sha256("yourNewUsername:yourNewPassword")
-// then paste the result below as ADMIN_HASH.
-const ADMIN_HASH = "2c7b842a2c1887cbba853f113a4b047188d2d91cad08032ff5a73600d0ec66d5"; // starkindustriesdatabase / starkindustriesdatabasefirstsecureserver
-
-async function sha256(str){
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
 /* ============ DATA ============ */
@@ -754,9 +1032,11 @@ let products = JSON.parse(localStorage.getItem('sh_products')) || [
 let orders = [];
 let cart = JSON.parse(localStorage.getItem('sh_cart')) || [];
 let faqs = JSON.parse(localStorage.getItem('sh_faqs')) || [
-  {id:1, question:'How do you deliver?', answer:'We deliver straight to your class in break.'},
-  {id:2, question:'Can I order in advance?', answer:'Yes — place your order before break and we will get it ready for you.'},
-  {id:3, question:'Do you offer specials?', answer:'Absolutely — keep an eye out for our daily snack deals and bundles.'}
+  {id:1, question:'How do you deliver?', answer:'We deliver straight to your classroom during morning and afternoon breaks.'},
+  {id:2, question:'Can I order in advance?', answer:'Yes — place your order before break and our team will prepare and pack it ready for prompt pickup.'},
+  {id:3, question:'What are your shop hours?', answer:'We are open Sunday through Thursday from 3:00 PM to 8:00 PM (UTC+4). On Friday and Saturday, the store operates 24 hours.'},
+  {id:4, question:'What payment methods do you accept?', answer:'Orders are confirmed on the website and settled directly at break pickup in AED cash or school account balance.'},
+  {id:5, question:'Are there allergen warnings on your products?', answer:'Yes, snack ingredients are listed on packages. If you have nut, dairy, or gluten sensitivities, please review ingredients before placing an order.'}
 ];
 let coupons = (JSON.parse(localStorage.getItem('sh_coupons')) || [
   {id:1, code:'SAVE10', percent:10},
@@ -770,7 +1050,7 @@ let activeCouponCode = '';
 let activeFilter = "All";
 let isLoggedIn = false;
 let flashSale = JSON.parse(localStorage.getItem('sh_flash_sale')) === true;
-let adminHash = localStorage.getItem('sh_admin_hash') || ADMIN_HASH;
+try { localStorage.removeItem('sh_admin_hash'); } catch(e){}
 let pendingDeleteProductId = null;
 const SHIPPING_FEE = 1;
 
@@ -792,6 +1072,80 @@ function saveState(){
   localStorage.setItem('sh_flash_sale', JSON.stringify(flashSale));
 }
 
+/* ============ SHOP OPEN / CLOSE ============ */
+let shopManualOverride = JSON.parse(localStorage.getItem('sh_shop_override')) || null; // null = auto, 'open' or 'closed'
+
+function getAbuDhabiNow(){
+  // UTC+4
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + 4 * 3600000);
+}
+
+function isShopOpenBySchedule(){
+  const ad = getAbuDhabiNow();
+  const day = ad.getDay(); // 0=Sun,1=Mon,...,5=Fri,6=Sat
+  // Friday(5) and Saturday(6) → always open
+  if(day === 5 || day === 6) return true;
+  // Sun–Thu: open 3 PM (15:00) to 8 PM (20:00)
+  const hour = ad.getHours();
+  return hour >= 15 && hour < 20;
+}
+
+function isShopClosed(){
+  if(shopManualOverride === 'closed') return true;
+  if(shopManualOverride === 'open') return false;
+  return !isShopOpenBySchedule();
+}
+
+function applyShopStatus(){
+  const closed = isShopClosed();
+  const wrap = document.getElementById('shopClosedWrap');
+  const floatingCart = document.querySelector('.floating-cart-btn');
+  if(wrap){
+    if(closed) wrap.classList.add('closed');
+    else wrap.classList.remove('closed');
+  }
+  if(floatingCart){
+    if(closed){ floatingCart.style.display = 'none'; }
+    else { floatingCart.style.display = ''; }
+  }
+  // Update admin UI if visible
+  const statusText = document.getElementById('shopStatusText');
+  const toggleBtn = document.getElementById('shopCloseToggle');
+  const infoEl = document.getElementById('shopStatusInfo');
+  if(statusText){
+    statusText.textContent = closed ? 'Shop is closed' : 'Shop is open';
+  }
+  if(toggleBtn){
+    toggleBtn.textContent = closed ? 'Open Shop' : 'Close Shop';
+    if(closed){ toggleBtn.classList.add('active'); }
+    else { toggleBtn.classList.remove('active'); }
+  }
+  if(infoEl){
+    const mode = shopManualOverride ? `Manual override: ${shopManualOverride}` : 'Auto (schedule)';
+    infoEl.textContent = `${mode} · Schedule: Sun–Thu 3 PM – 8 PM (UTC+4). Fri & Sat 24 hrs.`;
+  }
+}
+
+function toggleShopManual(){
+  const currentlyClosed = isShopClosed();
+  if(currentlyClosed){
+    shopManualOverride = 'open';
+  } else {
+    shopManualOverride = 'closed';
+  }
+  localStorage.setItem('sh_shop_override', JSON.stringify(shopManualOverride));
+  applyShopStatus();
+}
+
+// Re-check schedule every 60 seconds
+setInterval(function(){
+  if(shopManualOverride === null){
+    applyShopStatus();
+  }
+}, 60000);
+
 /* ============ STORE RENDER ============ */
 function renderFilters(){
   const cats = ["All", ...new Set(products.map(p=>p.category))];
@@ -810,7 +1164,7 @@ function renderStore(){
     <div class="card ${p.stock<=0?'out-of-stock':''}">
       ${p.stock>0 && p.stock<=5 ? '<div class="badge">Low Stock!</div>':''}
       <div class="emoji-banner">
-        ${p.image ? `<img class="product-image" src="${p.image}" alt="${p.name}">` : p.emoji}
+        ${p.image ? `<img class="product-image" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" width="220" height="120">` : p.emoji}
       </div>
       <div class="card-body">
         <h3>${p.name}</h3>
@@ -821,7 +1175,7 @@ function renderStore(){
               ? `<span class="price-was">Was ${formatCurrency(p.price)}</span><span class="price-now">Now ${formatCurrency(getSalePrice(p.price))}</span>`
               : formatCurrency(p.price)}
           </span>
-          <button class="add-btn" ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id})">
+          <button class="add-btn" ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id})" data-tooltip="${p.stock<=0 ? 'Currently out of stock' : 'Max 5 per item • Click to add'}">
             ${p.stock<=0?'Sold Out':'Add +'}
           </button>
         </div>
@@ -831,13 +1185,22 @@ function renderStore(){
 }
 
 /* ============ CART ============ */
+const MAX_ITEM_LIMIT = 5;
+
 function addToCart(id){
   const p = products.find(x=>x.id===id);
   if(!p || p.stock<=0) return;
   const item = cart.find(c=>c.id===id);
   if(item){
+    if(item.qty >= MAX_ITEM_LIMIT){
+      showCartToast(`Maximum limit of ${MAX_ITEM_LIMIT} reached for ${p.name}`);
+      return;
+    }
     if(item.qty < p.stock) item.qty++;
-    else return;
+    else {
+      showCartToast(`Only ${p.stock} in stock for ${p.name}`);
+      return;
+    }
   } else cart.push({id, qty:1});
   saveState();
   renderCart();
@@ -856,8 +1219,13 @@ function changeQty(id, delta){
   const item = cart.find(c=>c.id===id);
   const p = products.find(x=>x.id===id);
   if(!item) return;
+  if(delta > 0 && item.qty >= MAX_ITEM_LIMIT){
+    showCartToast(`Maximum limit of ${MAX_ITEM_LIMIT} per item`);
+    return;
+  }
   item.qty += delta;
   if(item.qty <= 0) cart = cart.filter(c=>c.id!==id);
+  else if(item.qty > MAX_ITEM_LIMIT) item.qty = MAX_ITEM_LIMIT;
   else if(item.qty > p.stock) item.qty = p.stock;
   saveState();
   renderCart();
@@ -1083,10 +1451,6 @@ function openLoginModal(){
   document.getElementById('loginModal').classList.add('open');
 }
 
-function openCredentialsModal(){
-  alert('Admin login details are now managed securely in Vercel. Update ADMIN_USERNAME and ADMIN_PASSWORD in your backend project settings, then redeploy.');
-}
-
 async function tryLogin(){
   const username = document.getElementById('loginUser').value;
   const password = document.getElementById('loginPass').value;
@@ -1125,57 +1489,29 @@ async function tryLogin(){
   showAdmin();
 }
 
-async function changeAdminCredentials(){
-  const currentUsername = document.getElementById('currentUsername').value.trim();
-  const currentPassword = document.getElementById('currentPassword').value;
-  const newUsername = document.getElementById('newUsername').value.trim();
-  const newPassword = document.getElementById('newPassword').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
-  const error = document.getElementById('credentialsError');
-
-  error.textContent = '';
-
-  if(!currentUsername || !currentPassword){
-    error.textContent = 'Enter your current username and password.';
-    return;
-  }
-
-  if(await sha256(`${currentUsername}:${currentPassword}`) !== adminHash){
-    error.textContent = 'The current username or password is incorrect.';
-    return;
-  }
-
-  if(!newUsername && !newPassword){
-    error.textContent = 'Enter a new username or password to make a change.';
-    return;
-  }
-
-  if(newPassword && newPassword !== confirmPassword){
-    error.textContent = 'The new passwords do not match.';
-    return;
-  }
-
-  const updatedUsername = newUsername || currentUsername;
-  const updatedPassword = newPassword || currentPassword;
-  adminHash = await sha256(`${updatedUsername}:${updatedPassword}`);
-  localStorage.setItem('sh_admin_hash', adminHash);
-  closeModal('credentialsModal');
-  ['currentUsername', 'currentPassword', 'newUsername', 'newPassword', 'confirmPassword']
-    .forEach(id => document.getElementById(id).value = '');
-  showCartToast('Login details updated');
-}
-
 function showStore(){
-  document.getElementById('storeView').style.display = 'block';
-  document.getElementById('adminView').style.display = 'none';
+  document.title = 'Snaxify 🍿 | Fresh Snacks & Quick Break Pickup';
+  const store = document.getElementById('storeView');
+  const admin = document.getElementById('adminView');
+  admin.style.display = 'none';
+  store.style.display = 'block';
+  store.style.animation = 'none';
+  void store.offsetWidth;
+  store.style.animation = 'pageFadeIn 0.5s ease forwards';
   renderStore();
   renderFaq();
   renderCart();
 }
 
 function showAdmin(){
-  document.getElementById('storeView').style.display = 'none';
-  document.getElementById('adminView').style.display = 'block';
+  document.title = 'Admin Dashboard 📊 | Snaxify 🍿';
+  const store = document.getElementById('storeView');
+  const admin = document.getElementById('adminView');
+  store.style.display = 'none';
+  admin.style.display = 'block';
+  admin.style.animation = 'none';
+  void admin.offsetWidth;
+  admin.style.animation = 'pageFadeIn 0.5s ease forwards';
   renderAdmin();
 }
 
@@ -1268,14 +1604,49 @@ function removeCurrentImage(){
   document.getElementById('removeImageField').style.display = 'none';
 }
 
-function saveProduct(){
+function compressImage(file, maxWidth = 600, quality = 0.75){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const elem = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        elem.width = width;
+        elem.height = height;
+        const ctx = elem.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(elem.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+}
+
+async function saveProduct(){
   const name = document.getElementById('formName').value.trim();
   const category = document.getElementById('formCategory').value;
   const price = Number(document.getElementById('formPrice').value);
   const stock = Number(document.getElementById('formStock').value);
   const emoji = document.getElementById('formEmoji').value.trim() || '🍿';
   const desc = document.getElementById('formDesc').value.trim();
-  const imageUrl = document.getElementById('formImageUrl').value.trim();
+  let imageUrl = document.getElementById('formImageUrl').value.trim();
+  const fileInput = document.getElementById('formImage');
+  if(fileInput && fileInput.files && fileInput.files[0]){
+    try {
+      imageUrl = await compressImage(fileInput.files[0]);
+    } catch(e){
+      console.warn('Image compression fallback:', e);
+    }
+  }
   const editId = Number(document.getElementById('editId').value);
 
   if(!name || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0){
@@ -1471,4 +1842,19 @@ function renderFaq(){
 renderStore();
 renderFaq();
 renderCart();
+applyShopStatus();
+
+// Keyboard accessibility: Close modals/drawer with Escape key
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    ['checkoutModal', 'loginModal', 'flashSaleConfirm', 'deleteProductConfirm'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el && el.classList.contains('open')) closeModal(id);
+    });
+    const drawer = document.getElementById('cartDrawer');
+    if(drawer && drawer.classList.contains('open')) closeCart();
+  }
+});
 </script>
+</body>
+</html>

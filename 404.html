@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Page Not Found | Snaxify 🍿</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍿</text></svg>">
+<style>
+  :root {
+    --primary: #c96857;
+    --accent: #5c927f;
+    --dark: #2d4039;
+    --light: #f5f2ea;
+    --surface: #fffdf8;
+    --muted: #6e7872;
+    --line: #e8e4da;
+    --shadow: 0 10px 28px rgba(45,64,57,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --dark: #e8e4da;
+      --light: #1a1e1c;
+      --surface: #252b28;
+      --muted: #a0a8a3;
+      --line: #3a423d;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Avenir Next', 'Trebuchet MS', sans-serif; }
+  body {
+    background: var(--light);
+    color: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 48px 36px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: var(--shadow);
+  }
+  .emoji { font-size: 76px; margin-bottom: 12px; display: inline-block; animation: float 3s ease-in-out infinite; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(201, 104, 87, 0.12);
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 800;
+    padding: 5px 14px;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+  h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 900; margin-bottom: 12px; line-height: 1.2; }
+  p { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 28px; }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    padding: 13px 28px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 15px;
+    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 4px 14px rgba(92, 146, 127, 0.3);
+  }
+  .cta-btn:hover { background: #05b989; transform: translateY(-2px); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="emoji">🍿🥫</div>
+    <div><span class="badge">404 ERROR</span></div>
+    <h1>Snack Not Found</h1>
+    <p>Looks like this page got eaten or doesn't exist anymore! Head back to the store to grab fresh snacks for your break.</p>
+    <a href="/" class="cta-btn">Back to Snaxify 🍿</a>
+  </div>
+</body>
+</html>

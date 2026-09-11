@@ -102,6 +102,14 @@ module.exports = async (req, res) => {
     sendJson(res, 400, { error: 'Order items and a valid total are required.' });
     return;
   }
+  const hasInvalidQty = items.some(item => {
+    const qty = typeof item.quantity === 'number' ? item.quantity : item.qty;
+    return typeof qty !== 'number' || qty < 1 || qty > 5;
+  });
+  if (hasInvalidQty) {
+    sendJson(res, 400, { error: 'Each item can have a maximum quantity of 5 per order.' });
+    return;
+  }
 
   try {
     const ordersUrl = new URL('/rest/v1/orders', supabaseUrl);
