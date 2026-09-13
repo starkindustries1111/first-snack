@@ -117,24 +117,67 @@
   [data-theme="dark"] [data-tooltip]::after{background:#3a4a42;color:#fff;}
   [data-theme="dark"] [data-tooltip]::before{border-top-color:#3a4a42;}
 
-  /* Tooltip-below variant for elements near the top of the page (nav) */
-  nav [data-tooltip]::after{
-    bottom:auto;
-    top:calc(100% + 8px);
-    transform:translateX(-50%) translateY(-4px);
+  /* Tooltip-below variant for elements in the top navigation (timings, change theme, admin) */
+  nav [data-tooltip]::after,
+  .nav-timing-badge[data-tooltip]::after,
+  .theme-toggle[data-tooltip]::after,
+  .admin-link[data-tooltip]::after{
+    bottom:auto !important;
+    top:calc(100% + 10px) !important;
+    left:50% !important;
+    right:auto !important;
+    transform:translateX(-50%) translateY(-4px) !important;
+    white-space:nowrap !important;
+    z-index:1000 !important;
   }
-  nav [data-tooltip]::before{
-    bottom:auto;
-    top:calc(100% + 2px);
-    transform:translateX(-50%) translateY(-4px);
-    border-top-color:transparent;
-    border-bottom-color:#1c2723;
+  nav [data-tooltip]::before,
+  .nav-timing-badge[data-tooltip]::before,
+  .theme-toggle[data-tooltip]::before,
+  .admin-link[data-tooltip]::before{
+    bottom:auto !important;
+    top:calc(100% + 3px) !important;
+    left:50% !important;
+    right:auto !important;
+    transform:translateX(-50%) translateY(-4px) !important;
+    border-top-color:transparent !important;
+    border-bottom-color:#1c2723 !important;
+    z-index:1000 !important;
   }
   nav [data-tooltip]:hover::after,
-  nav [data-tooltip]:hover::before{
-    transform:translateX(-50%) translateY(0);
+  nav [data-tooltip]:hover::before,
+  .nav-timing-badge[data-tooltip]:hover::after,
+  .nav-timing-badge[data-tooltip]:hover::before,
+  .theme-toggle[data-tooltip]:hover::after,
+  .theme-toggle[data-tooltip]:hover::before,
+  .admin-link[data-tooltip]:hover::after,
+  .admin-link[data-tooltip]:hover::before{
+    opacity:1 !important;
+    visibility:visible !important;
+    transform:translateX(-50%) translateY(0) !important;
   }
-  [data-theme="dark"] nav [data-tooltip]::before{border-top-color:transparent;border-bottom-color:#3a4a42;}
+  [data-theme="dark"] nav [data-tooltip]::before,
+  [data-theme="dark"] .nav-timing-badge[data-tooltip]::before,
+  [data-theme="dark"] .theme-toggle[data-tooltip]::before,
+  [data-theme="dark"] .admin-link[data-tooltip]::before{
+    border-top-color:transparent !important;
+    border-bottom-color:#3a4a42 !important;
+  }
+
+  /* Right-align admin-link tooltip so it doesn't clip off the right edge of the screen */
+  .admin-link[data-tooltip]::after{
+    left:auto !important;
+    right:0 !important;
+    transform:translateY(-4px) !important;
+  }
+  .admin-link[data-tooltip]::before{
+    left:auto !important;
+    right:14px !important;
+    transform:translateY(-4px) !important;
+  }
+  .admin-link[data-tooltip]:hover::after,
+  .admin-link[data-tooltip]:hover::before{
+    transform:translateY(0) !important;
+  }
 
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Avenir Next','Trebuchet MS',sans-serif;}
   body{background:var(--light);color:var(--dark);min-height:100vh;}
@@ -427,7 +470,8 @@
   #checkoutModal.open .modal,
   #loginModal.open .modal,
   #flashSaleConfirm.open .modal,
-  #deleteProductConfirm.open .modal{animation:modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;}
+  #deleteProductConfirm.open .modal,
+  #requestModal.open .modal{animation:modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;}
   .modal{
     background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:30px;max-width:420px;width:100%;
     box-shadow:var(--shadow);position:relative;
@@ -441,6 +485,24 @@
   .modal button.submit{
     width:100%;background:var(--primary);color:white;border:none;
     padding:14px;border-radius:10px;font-weight:800;cursor:pointer;font-size:15px;
+    display:flex;align-items:center;justify-content:center;min-height:48px;
+    transition:background 0.2s, opacity 0.2s;
+  }
+  .modal button.submit:disabled{
+    cursor:not-allowed;
+    opacity:0.85;
+  }
+  .login-spinner{
+    display:inline-block;
+    width:22px;
+    height:22px;
+    border:3px solid rgba(255,255,255,0.35);
+    border-radius:50%;
+    border-top-color:#ffffff;
+    animation:loginSpin 0.7s linear infinite;
+  }
+  @keyframes loginSpin{
+    to{transform:rotate(360deg);}
   }
   .modal .close-x{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#999;}
   .coupon-box{margin:16px 0 20px;background:#f4f8f4;border:1px solid #cfe0d5;border-radius:12px;padding:16px;position:relative;overflow:hidden;}
@@ -496,6 +558,53 @@
   .flash-confirm-actions button{flex:1;padding:12px;border:none;border-radius:9px;font-weight:800;cursor:pointer;}
   .flash-cancel-btn{background:#eceae3;color:var(--dark);}
   .flash-confirm-btn{background:var(--accent);color:white;}
+  .admin-clear-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 15px;
+    font-size:12.5px;
+    font-weight:800;
+    color:#d9534f;
+    background:rgba(217,83,79,0.08);
+    border:1px solid rgba(217,83,79,0.24);
+    border-radius:9px;
+    cursor:pointer;
+    transition:all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .admin-clear-btn:hover{
+    background:#d9534f;
+    color:#ffffff;
+    border-color:#d9534f;
+    transform:translateY(-1px);
+    box-shadow:0 4px 14px rgba(217,83,79,0.28);
+  }
+  .admin-clear-btn:active{
+    transform:translateY(0);
+    box-shadow:none;
+  }
+  .admin-clear-btn svg{
+    width:13px;
+    height:13px;
+    stroke:currentColor;
+    stroke-width:2.2;
+    fill:none;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    transition:transform 0.2s ease;
+  }
+  .admin-clear-btn:hover svg{
+    transform:scale(1.1);
+  }
+  [data-theme="dark"] .admin-clear-btn{
+    color:#ff8580;
+    background:rgba(255,133,128,0.12);
+    border-color:rgba(255,133,128,0.28);
+  }
+  [data-theme="dark"] .admin-clear-btn:hover{
+    background:#d9534f;
+    color:#ffffff;
+  }
   .credentials-form{display:grid;gap:14px;}
   .credentials-form label{display:grid;gap:6px;font-size:13px;font-weight:800;color:var(--dark);}
   .credentials-form input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fffefa;font:inherit;font-weight:400;}
@@ -804,6 +913,7 @@
   <div class="stats-row">
     <div class="stat-card"><div class="num" id="statProducts">0</div><div class="label">Products</div></div>
     <div class="stat-card"><div class="num" id="statOrders">0</div><div class="label">Orders</div></div>
+    <div class="stat-card"><div class="num" id="statRequests">0</div><div class="label">Requests</div></div>
     <div class="stat-card"><div class="num" id="statRevenue">AED 0.00</div><div class="label">Revenue</div></div>
     <div class="stat-card"><div class="num" id="statLowStock">0</div><div class="label">Low Stock</div></div>
   </div>
@@ -927,8 +1037,29 @@
     </table>
   </div>
 
-  <div class="admin-section">
-    <h2>🧾 Recent Orders</h2>
+  <div class="admin-section" id="itemRequestsSection">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;">💡 Requested Items (<span id="requestCountBadge">0</span>)</h2>
+      <button type="button" class="admin-clear-btn" onclick="clearAllItemRequests()" aria-label="Clear all requested items">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+        Clear All
+      </button>
+    </div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:14px;">Snacks and drinks requested by students from the homepage.</p>
+    <table>
+      <thead><tr><th>#</th><th>Item Requested</th><th>Requested By</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody id="requestAdminTable"></tbody>
+    </table>
+  </div>
+
+  <div class="admin-section" id="recentOrdersSection">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;">🧾 Recent Orders (<span id="orderCountBadge">0</span>)</h2>
+      <button type="button" class="admin-clear-btn" onclick="clearAllOrders()" aria-label="Clear all recent orders">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+        Clear All
+      </button>
+    </div>
     <table>
       <thead><tr><th>Order #</th><th>Name</th><th>Class</th><th>Items</th><th>Total</th><th>Time</th></tr></thead>
       <tbody id="orderTable"></tbody>
@@ -988,10 +1119,10 @@
     <h2 id="loginTitle">🔐 Admin Login</h2>
     <div class="error-msg" id="loginError" role="alert">Wrong username or password</div>
     <label for="loginUser" style="font-size:12px;font-weight:700;margin-bottom:4px;display:block;">Username</label>
-    <input type="text" id="loginUser" placeholder="Username" autocomplete="username">
+    <input type="text" id="loginUser" placeholder="Username" autocomplete="username" onkeydown="if(event.key==='Enter') tryLogin()">
     <label for="loginPass" style="font-size:12px;font-weight:700;margin-bottom:4px;display:block;">Password</label>
-    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
-    <button class="submit" onclick="tryLogin()">Log In</button>
+    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter') tryLogin()">
+    <button class="submit" id="loginSubmitBtn" onclick="tryLogin()">Log In</button>
   </div>
 </div>
 
@@ -1016,6 +1147,49 @@
       <button class="flash-cancel-btn" onclick="closeModal('deleteProductConfirm')">Cancel</button>
       <button class="inventory-delete-btn" onclick="confirmDeleteProduct()">Yes, delete it</button>
     </div>
+  </div>
+</div>
+
+<!-- REQUEST ITEM MODAL -->
+<div class="modal-overlay" id="requestModal" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('requestModal')" aria-label="Close modal">×</button>
+
+    <!-- FORM VIEW -->
+    <div id="requestFormView">
+      <h2 id="requestModalTitle">💡 Request an Item</h2>
+      <p style="color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:16px;">
+        Want us to stock a specific snack or drink? Let us know below!
+      </p>
+      <div class="error-msg" id="requestError" role="alert" style="display:none;margin-bottom:12px;"></div>
+
+      <label for="requestCustomerName" style="font-size:12px;font-weight:700;margin-bottom:4px;display:block;">
+        Your name <span style="font-weight:400;color:var(--muted);">(will not be shared anywhere)</span>
+      </label>
+      <input type="text" id="requestCustomerName" placeholder="e.g. Maya (or leave blank for anonymous)" autocomplete="name" maxlength="100">
+
+      <label for="requestItemName" style="font-size:12px;font-weight:700;margin-bottom:4px;display:block;">
+        What item would you like to request?
+      </label>
+      <input type="text" id="requestItemName" placeholder="e.g. Takis Fuego, Boba Milk Tea, Cheetos..." maxlength="150">
+
+      <button type="button" class="submit" id="requestSubmitBtn" onclick="submitItemRequest()">Submit</button>
+    </div>
+
+    <!-- SUCCESS VIEW WITH GREEN TICK & FADING ANIMATION -->
+    <div id="requestSuccessView" style="display:none;text-align:center;padding:10px 0 6px;">
+      <div class="success-check" style="width:72px;height:72px;margin:0 auto 16px;border-radius:50%;background:#e1f0e8;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(5,185,137,0.22);animation:modalFadeIn 0.35s ease both;">
+        <svg viewBox="0 0 48 48" style="width:42px;height:42px;stroke:#05b989;stroke-width:4.5;fill:none;stroke-linecap:round;stroke-linejoin:round;">
+          <path d="M10 25l9 9 19-20" style="stroke-dasharray:48;stroke-dashoffset:48;animation:checkDraw 0.45s 0.15s ease forwards;"></path>
+        </svg>
+      </div>
+      <h2 style="color:var(--dark);margin-bottom:8px;">Request Submitted!</h2>
+      <p style="color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:20px;">
+        Thanks for your suggestion! We'll review it and look into stocking it for break time.
+      </p>
+      <button type="button" class="submit" style="background:var(--accent);" onclick="closeModal('requestModal')">Done</button>
+    </div>
+
   </div>
 </div>
 
@@ -1096,6 +1270,7 @@ let adminCredentials = null; // Base64 Basic auth token, set on login
 let flashSale = JSON.parse(localStorage.getItem('sh_flash_sale')) === true;
 try { localStorage.removeItem('sh_admin_hash'); } catch(e){}
 let pendingDeleteProductId = null;
+let itemRequests = JSON.parse(localStorage.getItem('sh_item_requests')) || [];
 const SHIPPING_FEE = 1;
 
 const formatCurrency = (value) => new Intl.NumberFormat('en-AE', {
@@ -1522,17 +1697,225 @@ function confirmFlashSaleToggle(){
   showCartToast(flashSale ? 'Flash sale is now on' : 'Flash sale is now off');
 }
 
+function openRequestModal(){
+  const formView = document.getElementById('requestFormView');
+  const successView = document.getElementById('requestSuccessView');
+  const err = document.getElementById('requestError');
+  const nameInput = document.getElementById('requestCustomerName');
+  const itemInput = document.getElementById('requestItemName');
+
+  if(formView) formView.style.display = 'block';
+  if(successView) successView.style.display = 'none';
+  if(err){ err.style.display = 'none'; err.textContent = ''; }
+  if(nameInput) nameInput.value = '';
+  if(itemInput) itemInput.value = '';
+
+  document.getElementById('requestModal').classList.add('open');
+  setTimeout(() => { if(itemInput) itemInput.focus(); }, 150);
+}
+
+async function submitItemRequest(){
+  const nameInput = document.getElementById('requestCustomerName');
+  const itemInput = document.getElementById('requestItemName');
+  const err = document.getElementById('requestError');
+  const submitBtn = document.getElementById('requestSubmitBtn');
+  const rawItem = itemInput ? itemInput.value.trim() : '';
+  const rawName = nameInput ? nameInput.value.trim() : '';
+
+  if(!rawItem){
+    if(err){
+      err.textContent = 'Please enter what snack or drink you would like to request.';
+      err.style.display = 'block';
+    }
+    if(itemInput) itemInput.focus();
+    return;
+  }
+
+  if(err) err.style.display = 'none';
+  if(submitBtn) submitBtn.disabled = true;
+
+  const newRequest = {
+    id: Date.now(),
+    name: rawName || 'Anonymous',
+    item: rawItem,
+    date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+  };
+
+  // Save to local state and localStorage
+  itemRequests.unshift(newRequest);
+  localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
+
+  // Push to serverless backend API
+  try {
+    fetch(apiUrl('/api/requests'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newRequest.name, item: newRequest.item })
+    }).catch(function(){});
+  } catch(e){}
+
+  if(submitBtn) submitBtn.disabled = false;
+
+  // Show green tick with fading animation
+  const formView = document.getElementById('requestFormView');
+  const successView = document.getElementById('requestSuccessView');
+  if(formView) formView.style.display = 'none';
+  if(successView){
+    successView.style.display = 'block';
+    successView.style.animation = 'modalFadeIn 0.35s ease both';
+  }
+
+  // Update admin view if active
+  if(isLoggedIn){
+    renderItemRequestsAdmin();
+  }
+}
+
+function renderItemRequestsAdmin(){
+  const countBadge = document.getElementById('requestCountBadge');
+  const statEl = document.getElementById('statRequests');
+  if(countBadge) countBadge.textContent = itemRequests.length;
+  if(statEl) statEl.textContent = itemRequests.length;
+
+  const tbody = document.getElementById('requestAdminTable');
+  if(!tbody) return;
+  tbody.replaceChildren();
+
+  if(!itemRequests.length){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No item requests yet.</td></tr>';
+    return;
+  }
+
+  itemRequests.forEach((req, idx) => {
+    const row = document.createElement('tr');
+
+    const numCell = document.createElement('td');
+    numCell.innerHTML = `<strong>#${itemRequests.length - idx}</strong>`;
+    row.appendChild(numCell);
+
+    const itemCell = document.createElement('td');
+    const itemStrong = document.createElement('strong');
+    itemStrong.style.color = 'var(--accent)';
+    itemStrong.textContent = req.item;
+    itemCell.appendChild(itemStrong);
+    row.appendChild(itemCell);
+
+    const nameCell = document.createElement('td');
+    nameCell.textContent = req.name || 'Anonymous';
+    row.appendChild(nameCell);
+
+    const dateCell = document.createElement('td');
+    dateCell.style.color = 'var(--muted)';
+    dateCell.style.fontSize = '12px';
+    dateCell.textContent = req.date || 'Recently';
+    row.appendChild(dateCell);
+
+    const actionCell = document.createElement('td');
+    actionCell.className = 'table-actions';
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'inventory-delete-btn';
+    delBtn.textContent = 'Remove';
+    delBtn.onclick = () => deleteItemRequest(req.id);
+    actionCell.appendChild(delBtn);
+    row.appendChild(actionCell);
+
+    tbody.appendChild(row);
+  });
+}
+
+function deleteItemRequest(id){
+  itemRequests = itemRequests.filter(r => r.id !== id);
+  localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
+  renderItemRequestsAdmin();
+  if(adminCredentials){
+    fetch(apiUrl(`/api/requests?id=${id}`), {
+      method: 'DELETE',
+      headers: { Authorization: `Basic ${adminCredentials}` }
+    }).catch(function(){});
+  }
+}
+
+function clearAllItemRequests(){
+  if(!itemRequests.length){
+    showCartToast('There are no item requests to clear.');
+    return;
+  }
+  if(!confirm('Are you sure you want to clear all item requests? This cannot be undone.')) return;
+  itemRequests = [];
+  localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
+  renderItemRequestsAdmin();
+  if(adminCredentials){
+    fetch(apiUrl('/api/requests?id=all'), {
+      method: 'DELETE',
+      headers: { Authorization: `Basic ${adminCredentials}` }
+    }).catch(function(){});
+  }
+  showCartToast('All item requests cleared');
+}
+
+function clearAllOrders(){
+  if(!orders.length){
+    showCartToast('There are no orders to clear.');
+    return;
+  }
+  if(!confirm('Are you sure you want to clear all orders? This cannot be undone.')) return;
+  orders = [];
+  const orderTable = document.getElementById('orderTable');
+  if(orderTable) orderTable.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No orders yet</td></tr>';
+  const statOrders = document.getElementById('statOrders');
+  const statRevenue = document.getElementById('statRevenue');
+  const orderBadge = document.getElementById('orderCountBadge');
+  if(statOrders) statOrders.textContent = '0';
+  if(statRevenue) statRevenue.textContent = formatCurrency(0);
+  if(orderBadge) orderBadge.textContent = '0';
+
+  if(adminCredentials){
+    fetch(apiUrl('/api/checkout'), {
+      method: 'DELETE',
+      headers: { Authorization: `Basic ${adminCredentials}` }
+    }).catch(function(){});
+  }
+  showCartToast('All orders cleared');
+}
+
 function openLoginModal(){
+  const btn = document.getElementById('loginSubmitBtn');
+  if(btn){
+    btn.disabled = false;
+    btn.innerHTML = 'Log In';
+  }
+  const loginError = document.getElementById('loginError');
+  if(loginError) loginError.style.display = 'none';
   document.getElementById('loginModal').classList.add('open');
+  setTimeout(() => {
+    const userField = document.getElementById('loginUser');
+    if(userField) userField.focus();
+  }, 150);
 }
 
 async function tryLogin(){
-  const username = document.getElementById('loginUser').value;
+  const username = document.getElementById('loginUser').value.trim();
   const password = document.getElementById('loginPass').value;
   const loginError = document.getElementById('loginError');
+  const loginBtn = document.getElementById('loginSubmitBtn');
   loginError.style.display = 'none';
+
+  if(!username || !password){
+    loginError.textContent = 'Please enter both username and password.';
+    loginError.style.display = 'block';
+    return;
+  }
+
+  // Turn login button into a spinning loading circle
+  if(loginBtn){
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<span class="login-spinner" aria-label="Loading dashboard..."></span>';
+  }
+
+  let credentials = '';
   try {
-    const credentials = btoa(String.fromCharCode(...new TextEncoder().encode(`${username}:${password}`)));
+    credentials = btoa(String.fromCharCode(...new TextEncoder().encode(`${username}:${password}`)));
     const response = await fetch(apiUrl('/api/checkout'), {
       headers: {Authorization: `Basic ${credentials}`},
       cache: 'no-store'
@@ -1550,15 +1933,50 @@ async function tryLogin(){
       total: Number(order.total_amount) || 0,
       time: 'Not available'
     }));
+
+    // Fetch remote item requests if available
+    try {
+      const reqRes = await fetch(apiUrl('/api/requests'), {
+        headers: {Authorization: `Basic ${credentials}`},
+        cache: 'no-store'
+      });
+      if(reqRes.ok){
+        const reqData = await reqRes.json();
+        if(Array.isArray(reqData.requests) && reqData.requests.length > 0){
+          const localIds = new Set(itemRequests.map(r => String(r.id)));
+          reqData.requests.forEach(r => {
+            if(!localIds.has(String(r.id))){
+              itemRequests.push({
+                id: r.id,
+                name: r.name,
+                item: r.item,
+                date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Recently'
+              });
+            }
+          });
+          localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
+        }
+      }
+    } catch(e){}
+
   } catch (error) {
+    if(loginBtn){
+      loginBtn.disabled = false;
+      loginBtn.innerHTML = 'Log In';
+    }
     loginError.textContent = error instanceof TypeError
       ? 'The admin service could not be reached. Please try again.' : error.message;
     loginError.style.display = 'block';
     return;
   }
+
   isLoggedIn = true;
   adminCredentials = credentials;
   closeModal('loginModal');
+  if(loginBtn){
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = 'Log In';
+  }
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   document.getElementById('loginError').style.display = 'none';
@@ -1603,10 +2021,15 @@ function renderAdmin(){
   updateFlashSaleControls();
   document.getElementById('statProducts').textContent = products.length;
   document.getElementById('statOrders').textContent = orders.length;
+  const orderBadge = document.getElementById('orderCountBadge');
+  if(orderBadge) orderBadge.textContent = orders.length;
+  const reqStat = document.getElementById('statRequests');
+  if(reqStat) reqStat.textContent = itemRequests.length;
   document.getElementById('statRevenue').textContent = formatCurrency(orders.reduce((sum, order) => sum + order.total, 0));
   document.getElementById('statLowStock').textContent = products.filter(product => product.stock <= 5).length;
   renderFaqAdmin();
   renderCouponAdmin();
+  renderItemRequestsAdmin();
   document.getElementById('productTable').innerHTML = products.map(product => `
     <tr>
       <td>${product.emoji} ${product.name}</td>
@@ -1630,7 +2053,7 @@ function renderAdmin(){
     }
     orderTable.appendChild(row);
   }
-  if(!orders.length) orderTable.innerHTML = '<tr><td colspan="6">No orders yet</td></tr>';
+  if(!orders.length) orderTable.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No orders yet</td></tr>';
 }
 
 function editProduct(id){
@@ -1924,7 +2347,7 @@ applyShopStatus();
 // Keyboard accessibility: Close modals/drawer with Escape key
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape'){
-    ['checkoutModal', 'loginModal', 'flashSaleConfirm', 'deleteProductConfirm'].forEach(id => {
+    ['checkoutModal', 'loginModal', 'flashSaleConfirm', 'deleteProductConfirm', 'requestModal'].forEach(id => {
       const el = document.getElementById(id);
       if(el && el.classList.contains('open')) closeModal(id);
     });
