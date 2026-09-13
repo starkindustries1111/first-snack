@@ -1428,6 +1428,8 @@ async function fetchSharedCoupons(includeDisabled){
     if(!res.ok) return null;
     const data = await res.json();
     if(!Array.isArray(data.coupons)) return null;
+    // Keep the current browser's coupons available for the one-time admin migration.
+    if(data.coupons.length === 0 && !includeDisabled && coupons.length && !localStorage.getItem('sh_coupons_shared_initialized')) return data.coupons;
     applySharedCoupons(data.coupons);
     return data.coupons;
   } catch(e){ return null; }
@@ -1563,7 +1565,7 @@ setInterval(async function(){
   } catch(e){ /* API unreachable — keep current state */ }
   applyShopStatus();
   fetchSharedCatalog();
-  fetchSharedCoupons();
+  fetchSharedCoupons(isLoggedIn);
 }, 60000);
 
 /* ============ STORE RENDER ============ */
