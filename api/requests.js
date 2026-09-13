@@ -66,8 +66,12 @@ module.exports = async (req, res) => {
     const trimmedItem = item.trim().slice(0, 150);
     const trimmedName = typeof name === 'string' && name.trim() ? name.trim().slice(0, 100) : 'Anonymous';
 
-    if (supabaseUrl && (supabaseAnonKey || supabaseServiceKey)) {
-      try {
+    if (!supabaseUrl || !(supabaseAnonKey || supabaseServiceKey)) {
+      sendJson(res, 503, { error: 'The shared request service is not configured.' });
+      return;
+    }
+
+    try {
         const key = supabaseAnonKey || supabaseServiceKey;
         const targetUrl = new URL('/rest/v1/item_requests', supabaseUrl);
         const response = await fetch(targetUrl, {
@@ -92,26 +96,15 @@ module.exports = async (req, res) => {
             request: Array.isArray(data) ? data[0] : { name: trimmedName, item: trimmedItem }
           });
           return;
-        } else {
-          console.warn('Supabase insert item_requests returned status:', response.status);
         }
+        console.warn('Supabase insert item_requests returned status:', response.status);
+        sendJson(res, 502, { error: 'Your request could not be saved for everyone. Please try again.' });
+        return;
       } catch (err) {
         console.warn('Supabase item_requests error:', err.message);
+        sendJson(res, 502, { error: 'Your request could not be saved for everyone. Please try again.' });
+        return;
       }
-    }
-
-    // Fallback if Supabase table is not yet set up
-    sendJson(res, 201, {
-      success: true,
-      request: {
-        id: Date.now(),
-        name: trimmedName,
-        item: trimmedItem,
-        created_at: new Date().toISOString()
-      },
-      note: 'Saved locally'
-    });
-    return;
   }
 
   // ================= GET: Admin views item requests =================

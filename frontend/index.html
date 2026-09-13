@@ -1988,25 +1988,28 @@ async function submitItemRequest(){
   if(err) err.style.display = 'none';
   if(submitBtn) submitBtn.disabled = true;
 
-  const newRequest = {
-    id: Date.now(),
-    name: rawName || 'Anonymous',
-    item: rawItem,
-    date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
-  };
-
-  // Save to local state and localStorage
-  itemRequests.unshift(newRequest);
-  localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
-
-  // Push to serverless backend API
   try {
-    fetch(apiUrl('/api/requests'), {
+    const response = await fetch(apiUrl('/api/requests'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newRequest.name, item: newRequest.item })
-    }).catch(function(){});
-  } catch(e){}
+      body: JSON.stringify({ name: rawName || 'Anonymous', item: rawItem })
+    });
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok || !data.request) throw new Error(data.error || 'Your request could not be saved for everyone.');
+    const saved = data.request;
+    const newRequest = {
+      id: Number(saved.id),
+      name: saved.name || rawName || 'Anonymous',
+      item: saved.item || rawItem,
+      date: saved.created_at ? new Date(saved.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Just now'
+    };
+    itemRequests = [newRequest, ...itemRequests.filter(request => request.id !== newRequest.id)];
+    localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
+  } catch(e){
+    if(submitBtn) submitBtn.disabled = false;
+    if(err){ err.textContent = e.message || 'Your request could not be saved. Please try again.'; err.style.display = 'block'; }
+    return;
+  }
 
   if(submitBtn) submitBtn.disabled = false;
 
@@ -2078,33 +2081,49 @@ function renderItemRequestsAdmin(){
   });
 }
 
-function deleteItemRequest(id){
-  itemRequests = itemRequests.filter(r => r.id !== id);
-  localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
-  renderItemRequestsAdmin();
-  if(adminCredentials){
-    fetch(apiUrl(`/api/requests?id=${id}`), {
+async function deleteItemRequest(id){
+  if(!adminCredentials) return;
+  try {
+    const response = await fetch(apiUrl(`/api/requests?id=${id}`), {
       method: 'DELETE',
       headers: { Authorization: `Basic ${adminCredentials}` }
-    }).catch(function(){});
-  }
+    });
+    if(!response.ok) throw new Error();
+    itemRequests = itemRequests.filter(r => r.id !== id);
+    localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
+    renderItemRequestsAdmin();
+  } catch(e){ showCartToast('Could not remove this shared request.'); }
 }
 
-function clearAllItemRequests(){
+function applySharedItemRequests(list){
+  itemRequests = list.map(request => ({
+    id: Number(request.id),
+    name: request.name || 'Anonymous',
+    item: request.item || '',
+    date: request.created_at ? new Date(request.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Recently'
+  })).filter(request => request.id && request.item);
+  localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
+  if(isLoggedIn) renderItemRequestsAdmin();
+}
+
+async function clearAllItemRequests(){
   if(!itemRequests.length){
     showCartToast('There are no item requests to clear.');
     return;
   }
   if(!confirm('Are you sure you want to clear all item requests? This cannot be undone.')) return;
+  if(adminCredentials){
+    try {
+      const response = await fetch(apiUrl('/api/requests?id=all'), {
+      method: 'DELETE',
+      headers: { Authorization: `Basic ${adminCredentials}` }
+      });
+      if(!response.ok) throw new Error();
+    } catch(e){ showCartToast('Could not clear shared requests.'); return; }
+  }
   itemRequests = [];
   localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
   renderItemRequestsAdmin();
-  if(adminCredentials){
-    fetch(apiUrl('/api/requests?id=all'), {
-      method: 'DELETE',
-      headers: { Authorization: `Basic ${adminCredentials}` }
-    }).catch(function(){});
-  }
   showCartToast('All item requests cleared');
 }
 
@@ -2196,20 +2215,7 @@ async function tryLogin(){
       });
       if(reqRes.ok){
         const reqData = await reqRes.json();
-        if(Array.isArray(reqData.requests) && reqData.requests.length > 0){
-          const localIds = new Set(itemRequests.map(r => String(r.id)));
-          reqData.requests.forEach(r => {
-            if(!localIds.has(String(r.id))){
-              itemRequests.push({
-                id: r.id,
-                name: r.name,
-                item: r.item,
-                date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Recently'
-              });
-            }
-          });
-          localStorage.setItem('sh_item_requests', JSON.stringify(itemRequests));
-        }
+        if(Array.isArray(reqData.requests)) applySharedItemRequests(reqData.requests);
       }
     } catch(e){}
 
