@@ -1401,6 +1401,62 @@ async function persistFlashSaleToServer(){
   return persistCatalogToServer({ flash_sale: flashSale });
 }
 
+function normalizeSharedCoupon(coupon){
+  return {
+    id: Number(coupon.id),
+    code: String(coupon.code || '').trim().toUpperCase(),
+    percent: Number(coupon.percent),
+    waivesShipping: coupon.waivesShipping === true,
+    enabled: coupon.enabled !== false
+  };
+}
+
+function applySharedCoupons(list){
+  coupons = list.map(normalizeSharedCoupon).filter(coupon => coupon.id && coupon.code);
+  if(activeCouponCode && !getCouponByCode(activeCouponCode)) activeCouponCode = '';
+  saveState();
+  if(isLoggedIn) renderCouponAdmin();
+  renderCart();
+}
+
+async function fetchSharedCoupons(includeDisabled){
+  try {
+    const res = await fetch(apiUrl('/api/coupons'), {
+      headers: includeDisabled && adminCredentials ? { Authorization: `Basic ${adminCredentials}` } : {},
+      cache: 'no-store'
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    if(!Array.isArray(data.coupons)) return null;
+    applySharedCoupons(data.coupons);
+    return data.coupons;
+  } catch(e){ return null; }
+}
+
+async function persistCouponToServer(coupon){
+  if(!adminCredentials) return { ok: false, error: 'Please log in again to save this for everyone.' };
+  try {
+    const res = await fetch(apiUrl('/api/coupons'), {
+      method: 'PUT',
+      headers: adminHeaders(),
+      body: JSON.stringify(coupon)
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok ? { ok: true, coupon: data.coupon } : { ok: false, error: data.error || 'Could not save this coupon for everyone.' };
+  } catch(e){ return { ok: false, error: 'Could not reach the coupon service. Saved on this device only.' }; }
+}
+
+async function deleteCouponFromServer(id){
+  if(!adminCredentials) return { ok: false, error: 'Please log in again to remove this for everyone.' };
+  try {
+    const res = await fetch(apiUrl(`/api/coupons?id=${encodeURIComponent(id)}`), {
+      method: 'DELETE', headers: adminHeaders()
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok ? { ok: true } : { ok: false, error: data.error || 'Could not remove this coupon for everyone.' };
+  } catch(e){ return { ok: false, error: 'Could not reach the coupon service.' }; }
+}
+
 /* ============ SHOP OPEN / CLOSE ============ */
 let shopManualOverride = JSON.parse(localStorage.getItem('sh_shop_override')) || null; // null = auto, 'open' or 'closed'
 
@@ -1417,6 +1473,7 @@ let shopManualOverride = JSON.parse(localStorage.getItem('sh_shop_override')) ||
   } catch(e){ /* API unreachable — use localStorage fallback */ }
 })();
 fetchSharedCatalog();
+fetchSharedCoupons();
 
 function getAbuDhabiNow(){
   // UTC+4
@@ -1506,6 +1563,7 @@ setInterval(async function(){
   } catch(e){ /* API unreachable — keep current state */ }
   applyShopStatus();
   fetchSharedCatalog();
+  fetchSharedCoupons();
 }, 60000);
 
 /* ============ STORE RENDER ============ */
@@ -1690,10 +1748,21 @@ function openCheckoutModal(){
   document.getElementById('checkoutName').focus();
 }
 
-function applyCoupon(){
+async function applyCoupon(){
   const code = document.getElementById('checkoutCoupon').value.trim().toUpperCase();
   const message = document.getElementById('couponMessage');
-  const coupon = getCouponByCode(code);
+  let coupon = null;
+  try {
+    const res = await fetch(apiUrl(`/api/coupons?code=${encodeURIComponent(code)}`), { cache: 'no-store' });
+    const data = res.ok ? await res.json() : {};
+    if(data.coupon){
+      coupon = normalizeSharedCoupon(data.coupon);
+      const index = coupons.findIndex(item => item.id === coupon.id);
+      if(index >= 0) coupons[index] = coupon; else coupons.push(coupon);
+      saveState();
+    }
+  } catch(e){}
+  coupon = coupon || getCouponByCode(code);
 
   if(!coupon){
     activeCouponCode = '';
@@ -2089,6 +2158,17 @@ async function tryLogin(){
       if(Object.keys(payload).length) await persistCatalogToServer(payload);
     } catch(e){}
 
+    // One-time migration: publish the existing local coupons when the shared table is empty.
+    try {
+      const localCouponsBeforeSync = coupons.slice();
+      const remoteCoupons = await fetchSharedCoupons(true);
+      if(Array.isArray(remoteCoupons) && remoteCoupons.length === 0 && localCouponsBeforeSync.length && !localStorage.getItem('sh_coupons_shared_initialized')){
+        for(const coupon of localCouponsBeforeSync){ await persistCouponToServer(coupon); }
+        await fetchSharedCoupons(true);
+      }
+      if(Array.isArray(remoteCoupons)) localStorage.setItem('sh_coupons_shared_initialized', 'true');
+    } catch(e){}
+
   } catch (error) {
     if(loginBtn){
       loginBtn.disabled = false;
@@ -2340,7 +2420,7 @@ function updateCouponDiscountField(){
   if(waivesShipping) percentInput.value = '';
 }
 
-function saveCoupon(){
+async function saveCoupon(){
   const code = document.getElementById('couponCode').value.trim().toUpperCase();
   const waivesShipping = document.getElementById('couponWaivesShipping').checked;
   const percentValue = Number(document.getElementById('couponPercent').value);
@@ -2371,10 +2451,21 @@ function saveCoupon(){
     coupons.push({id: Date.now(), ...couponData});
   }
 
+  const savedCoupon = existingCoupon || coupons[coupons.length - 1];
   saveState();
   clearCouponForm();
   renderCouponAdmin();
-  showCartToast(existingCoupon ? 'Coupon updated' : 'Coupon saved');
+  const persist = await persistCouponToServer(savedCoupon);
+  if(persist.ok && persist.coupon){
+    const shared = normalizeSharedCoupon(persist.coupon);
+    const index = coupons.findIndex(coupon => coupon.id === shared.id);
+    if(index >= 0) coupons[index] = shared;
+    saveState();
+    renderCouponAdmin();
+  }
+  showCartToast(persist.ok
+    ? (existingCoupon ? 'Coupon updated for everyone' : 'Coupon saved for everyone')
+    : (persist.error || 'Coupon saved on this device only'));
 }
 
 function editCoupon(id){
@@ -2388,20 +2479,25 @@ function editCoupon(id){
   document.getElementById('couponCode').focus();
 }
 
-function deleteCoupon(id){
+async function deleteCoupon(id){
+  const persist = await deleteCouponFromServer(id);
+  if(!persist.ok){ showCartToast(persist.error || 'Coupon was not removed.'); return; }
   coupons = coupons.filter(coupon => coupon.id !== id);
   if(activeCouponCode && !getCouponByCode(activeCouponCode)) activeCouponCode = '';
   saveState();
   renderCouponAdmin();
+  showCartToast('Coupon removed for everyone');
 }
 
-function toggleCoupon(id){
+async function toggleCoupon(id){
   const coupon = coupons.find(item => item.id === id);
   if(!coupon) return;
   coupon.enabled = !coupon.enabled;
   if(!coupon.enabled && activeCouponCode === coupon.code) activeCouponCode = '';
   saveState();
   renderCouponAdmin();
+  const persist = await persistCouponToServer(coupon);
+  if(!persist.ok) showCartToast(persist.error || 'Coupon changed on this device only');
 }
 
 function clearCouponForm(){

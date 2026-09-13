@@ -20,7 +20,8 @@ module.exports = async (req, res) => {
   }
   const query = new URL(req.url, 'https://localhost').searchParams;
   const lookup = req.method === 'GET' && query.has('code');
-  if (!lookup) {
+  let isAdmin = false;
+  if (req.method !== 'GET' || req.headers.authorization) {
     const { ADMIN_USERNAME: username, ADMIN_PASSWORD: password } = process.env;
     if (!username || !password) return send(503, { error: 'Admin access is not configured.' });
     const digest = value => createHash('sha256').update(value).digest();
@@ -28,6 +29,7 @@ module.exports = async (req, res) => {
     if (!timingSafeEqual(digest(req.headers.authorization || ''), digest(expected))) {
       return send(401, { error: 'Please log in again to manage coupons.' });
     }
+    isAdmin = true;
   }
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -59,6 +61,7 @@ module.exports = async (req, res) => {
       if (!Number.isSafeInteger(id) || id <= 0) return send(400, { error: 'A valid coupon ID is required.' });
       target.searchParams.set('id', `eq.${id}`);
     } else {
+      if (!isAdmin) target.searchParams.set('enabled', 'eq.true');
       target.searchParams.set('order', 'id.asc');
     }
     const rows = [];
