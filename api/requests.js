@@ -72,7 +72,8 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const key = supabaseAnonKey || supabaseServiceKey;
+        // Server-side writes use the service key so RLS cannot reject a valid public request.
+        const key = supabaseServiceKey || supabaseAnonKey;
         const targetUrl = new URL('/rest/v1/item_requests', supabaseUrl);
         const response = await fetch(targetUrl, {
           method: 'POST',
