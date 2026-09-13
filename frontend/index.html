@@ -117,6 +117,25 @@
   [data-theme="dark"] [data-tooltip]::after{background:#3a4a42;color:#fff;}
   [data-theme="dark"] [data-tooltip]::before{border-top-color:#3a4a42;}
 
+  /* Tooltip-below variant for elements near the top of the page (nav) */
+  nav [data-tooltip]::after{
+    bottom:auto;
+    top:calc(100% + 8px);
+    transform:translateX(-50%) translateY(-4px);
+  }
+  nav [data-tooltip]::before{
+    bottom:auto;
+    top:calc(100% + 2px);
+    transform:translateX(-50%) translateY(-4px);
+    border-top-color:transparent;
+    border-bottom-color:#1c2723;
+  }
+  nav [data-tooltip]:hover::after,
+  nav [data-tooltip]:hover::before{
+    transform:translateX(-50%) translateY(0);
+  }
+  [data-theme="dark"] nav [data-tooltip]::before{border-top-color:transparent;border-bottom-color:#3a4a42;}
+
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Avenir Next','Trebuchet MS',sans-serif;}
   body{background:var(--light);color:var(--dark);min-height:100vh;}
   @keyframes pageFadeIn{
@@ -243,6 +262,28 @@
     transition:transform 0.2s, border-color 0.2s;cursor:pointer;
   }
   .hero-cta-secondary:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .hero-cta-request{
+    background:var(--surface);color:var(--dark);text-decoration:none;
+    padding:12px 22px;border-radius:12px;font-weight:800;font-size:14px;
+    border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px;
+    transition:transform 0.2s, border-color 0.2s, background 0.2s;cursor:pointer;
+  }
+  .hero-cta-request:hover{border-color:#f0c040;background:#fffbe6;transform:translateY(-1px);}
+
+  /* Request success tick */
+  .request-success-wrap{display:none;flex-direction:column;align-items:center;gap:14px;padding:30px 0 10px;}
+  .request-success-wrap.show{display:flex;animation:modalFadeIn 0.4s ease both;}
+  .request-success-tick{
+    width:64px;height:64px;border-radius:50%;background:var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    animation:requestPop 0.45s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  .request-success-tick svg{width:34px;height:34px;stroke:#fff;stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .request-success-tick svg path{stroke-dasharray:40;stroke-dashoffset:40;animation:requestDraw 0.5s 0.3s ease forwards;}
+  .request-success-msg{font-size:17px;font-weight:800;color:var(--dark);}
+  .request-success-sub{font-size:13px;color:var(--muted);margin-top:-8px;}
+  @keyframes requestPop{0%{transform:scale(0);opacity:0;}100%{transform:scale(1);opacity:1;}}
+  @keyframes requestDraw{to{stroke-dashoffset:0;}}
 
   /* CLEAR PRICING BAR */
   .pricing-bar{
@@ -649,6 +690,7 @@
     <div class="hero-actions">
       <a href="#productGrid" class="hero-cta" data-tooltip="Browse all snacks and drinks">Order Snacks Now 🍿</a>
       <button type="button" class="hero-cta-secondary" onclick="openCart()" data-tooltip="View snacks currently in your cart">View Cart 🛒</button>
+      <button type="button" class="hero-cta-request" onclick="openRequestModal()" data-tooltip="Suggest a snack you'd love to see">💡 Request an Item</button>
     </div>
   </div>
 
@@ -1050,6 +1092,7 @@ let coupons = (JSON.parse(localStorage.getItem('sh_coupons')) || [
 let activeCouponCode = '';
 let activeFilter = "All";
 let isLoggedIn = false;
+let adminCredentials = null; // Base64 Basic auth token, set on login
 let flashSale = JSON.parse(localStorage.getItem('sh_flash_sale')) === true;
 try { localStorage.removeItem('sh_admin_hash'); } catch(e){}
 let pendingDeleteProductId = null;
@@ -1075,6 +1118,19 @@ function saveState(){
 
 /* ============ SHOP OPEN / CLOSE ============ */
 let shopManualOverride = JSON.parse(localStorage.getItem('sh_shop_override')) || null; // null = auto, 'open' or 'closed'
+
+// Fetch the authoritative shop override from the backend on load
+(async function fetchShopOverride(){
+  try {
+    const res = await fetch(apiUrl('/api/shop-status'), { cache: 'no-store' });
+    if(res.ok){
+      const data = await res.json();
+      shopManualOverride = data.manual_override || null;
+      localStorage.setItem('sh_shop_override', JSON.stringify(shopManualOverride));
+      applyShopStatus();
+    }
+  } catch(e){ /* API unreachable — use localStorage fallback */ }
+})();
 
 function getAbuDhabiNow(){
   // UTC+4
@@ -1138,13 +1194,31 @@ function toggleShopManual(){
   }
   localStorage.setItem('sh_shop_override', JSON.stringify(shopManualOverride));
   applyShopStatus();
+
+  // Push to backend so all devices see the change
+  if(adminCredentials){
+    fetch(apiUrl('/api/shop-status'), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${adminCredentials}`
+      },
+      body: JSON.stringify({ manual_override: shopManualOverride })
+    }).catch(function(){ /* best-effort; localStorage already updated */ });
+  }
 }
 
-// Re-check schedule every 60 seconds
-setInterval(function(){
-  if(shopManualOverride === null){
-    applyShopStatus();
-  }
+// Poll shop status from the backend every 60 seconds so changes from other devices are picked up
+setInterval(async function(){
+  try {
+    const res = await fetch(apiUrl('/api/shop-status'), { cache: 'no-store' });
+    if(res.ok){
+      const data = await res.json();
+      shopManualOverride = data.manual_override || null;
+      localStorage.setItem('sh_shop_override', JSON.stringify(shopManualOverride));
+    }
+  } catch(e){ /* API unreachable — keep current state */ }
+  applyShopStatus();
 }, 60000);
 
 /* ============ STORE RENDER ============ */
@@ -1483,6 +1557,7 @@ async function tryLogin(){
     return;
   }
   isLoggedIn = true;
+  adminCredentials = credentials;
   closeModal('loginModal');
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
@@ -1518,6 +1593,7 @@ function showAdmin(){
 
 function logout(){
   isLoggedIn = false;
+  adminCredentials = null;
   orders = [];
   document.getElementById('orderTable').replaceChildren();
   showStore();
