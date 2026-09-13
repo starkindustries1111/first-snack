@@ -90,7 +90,7 @@ async function supabaseRequest(key, method, body) {
   };
   if (method !== 'POST') url.searchParams.set('id', 'eq.1');
   if (method === 'GET') {
-    url.searchParams.set('select', 'products,faqs');
+    url.searchParams.set('select', 'products,faqs,flash_sale');
   } else {
     headers['Content-Type'] = 'application/json';
     headers.Prefer = 'return=representation';
@@ -117,23 +117,24 @@ module.exports = async (req, res) => {
 
   if (req.method === 'GET') {
     if (!supabaseUrl || !supabaseAnonKey) {
-      sendJson(res, 200, { products: null, faqs: null });
+      sendJson(res, 200, { products: null, faqs: null, flash_sale: null });
       return;
     }
     try {
       const result = await supabaseRequest(supabaseAnonKey, 'GET');
       if (!result.ok) {
-        sendJson(res, 200, { products: null, faqs: null });
+        sendJson(res, 200, { products: null, faqs: null, flash_sale: null });
         return;
       }
       const row = Array.isArray(result.data) && result.data[0] ? result.data[0] : {};
       sendJson(res, 200, {
         products: Array.isArray(row.products) ? row.products : null,
-        faqs: Array.isArray(row.faqs) ? row.faqs : null
+        faqs: Array.isArray(row.faqs) ? row.faqs : null,
+        flash_sale: typeof row.flash_sale === 'boolean' ? row.flash_sale : null
       });
     } catch (error) {
       console.error('catalog GET failed:', error.message);
-      sendJson(res, 200, { products: null, faqs: null });
+      sendJson(res, 200, { products: null, faqs: null, flash_sale: null });
     }
     return;
   }
@@ -177,6 +178,13 @@ module.exports = async (req, res) => {
       }
       patch.faqs = faqs;
     }
+    if (Object.prototype.hasOwnProperty.call(body, 'flash_sale')) {
+      if (typeof body.flash_sale !== 'boolean') {
+        sendJson(res, 400, { error: 'Flash sale must be on or off.' });
+        return;
+      }
+      patch.flash_sale = body.flash_sale;
+    }
     if (!Object.keys(patch).length) {
       sendJson(res, 400, { error: 'Provide products or FAQs to save.' });
       return;
@@ -195,7 +203,8 @@ module.exports = async (req, res) => {
       const row = Array.isArray(result.data) && result.data[0] ? result.data[0] : patch;
       sendJson(res, 200, {
         products: Array.isArray(row.products) ? row.products : (patch.products || null),
-        faqs: Array.isArray(row.faqs) ? row.faqs : (patch.faqs || null)
+        faqs: Array.isArray(row.faqs) ? row.faqs : (patch.faqs || null),
+        flash_sale: typeof row.flash_sale === 'boolean' ? row.flash_sale : (Object.prototype.hasOwnProperty.call(patch, 'flash_sale') ? patch.flash_sale : null)
       });
     } catch (error) {
       console.error('catalog PUT error:', error.message);

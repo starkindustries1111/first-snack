@@ -61,11 +61,13 @@ CREATE TABLE IF NOT EXISTS shop_settings (
   id int PRIMARY KEY DEFAULT 1 CHECK (id = 1),
   manual_override text DEFAULT NULL,
   products jsonb DEFAULT NULL,
-  faqs jsonb DEFAULT NULL
+  faqs jsonb DEFAULT NULL,
+  flash_sale boolean NOT NULL DEFAULT false
 );
 
 ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS products jsonb DEFAULT NULL;
 ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS faqs jsonb DEFAULT NULL;
+ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS flash_sale boolean NOT NULL DEFAULT false;
 
 INSERT INTO shop_settings (id, manual_override) VALUES (1, NULL)
   ON CONFLICT (id) DO NOTHING;
