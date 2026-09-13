@@ -62,12 +62,16 @@ CREATE TABLE IF NOT EXISTS shop_settings (
   manual_override text DEFAULT NULL,
   products jsonb DEFAULT NULL,
   faqs jsonb DEFAULT NULL,
-  flash_sale boolean NOT NULL DEFAULT false
+  flash_sale boolean NOT NULL DEFAULT false,
+  coupon_hint_enabled boolean NOT NULL DEFAULT true,
+  coupon_hint_code text NOT NULL DEFAULT 'SHIPPING'
 );
 
 ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS products jsonb DEFAULT NULL;
 ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS faqs jsonb DEFAULT NULL;
 ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS flash_sale boolean NOT NULL DEFAULT false;
+ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS coupon_hint_enabled boolean NOT NULL DEFAULT true;
+ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS coupon_hint_code text NOT NULL DEFAULT 'SHIPPING';
 
 INSERT INTO shop_settings (id, manual_override) VALUES (1, NULL)
   ON CONFLICT (id) DO NOTHING;

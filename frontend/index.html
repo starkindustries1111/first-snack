@@ -289,6 +289,7 @@
   }
   .hero p{font-size:17px;color:var(--muted);font-weight:500;max-width:560px;line-height:1.6;margin-bottom:20px;}
   .hero-coupon-hint{display:inline-flex;align-items:center;gap:7px;margin:-6px 0 22px;padding:8px 12px;border:1px dashed #d5b85f;border-radius:999px;background:#fffaf0;color:#765e24;font-size:13px;font-weight:800;}
+  .hero-coupon-hint[hidden]{display:none;}
   .hero-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:30px;}
   .hero-cta{
     background:var(--accent);color:white;text-decoration:none;
@@ -688,6 +689,9 @@
   .coupon-manager .faq-admin-form input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(92,146,127,0.12);}
   .coupon-manager .faq-admin-form button{background:var(--dark);transition:background 0.2s,transform 0.2s;}
   .coupon-manager .faq-admin-form button:hover{background:var(--accent);transform:translateY(-1px);}
+  .coupon-hint-admin{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin:0 0 16px;padding:14px;border:1px solid #dcebe1;border-radius:11px;background:#f4f8f4;}
+  .coupon-hint-admin label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:900;color:#66706b;text-transform:uppercase;letter-spacing:.06em;}
+  .coupon-hint-admin input{padding:10px 11px;border:1px solid #c7d9cd;border-radius:8px;font-weight:800;background:#fff;}
   .coupon-option{display:flex;align-items:center;justify-content:flex-start;gap:8px;grid-column:1 / -1;width:max-content;max-width:100%;color:#52635b;font-size:13px;font-weight:800;}
   .coupon-option input{width:18px;height:18px;accent-color:var(--accent);}
   .coupon-option input:disabled{opacity:0.55;}
@@ -803,7 +807,7 @@
 <div id="storeView">
   <div class="hero">
     <h1>Snack better. Together.</h1>
-    <div class="hero-coupon-hint">🎟️ Psst... Use coupon code SHIPPING</div>
+    <div class="hero-coupon-hint" id="heroCouponHint">🎟️ <span id="heroCouponHintText">Psst... Use coupon code SHIPPING</span></div>
     <p>Fuel your grind between classes — order ahead and pick up fresh snacks right at break.</p>
     <div class="hero-actions">
       <a href="#productGrid" class="hero-cta" data-tooltip="Browse all snacks and drinks">Order Snacks Now 🍿</a>
@@ -1010,6 +1014,11 @@
 
   <div class="admin-section coupon-manager" id="couponManager">
     <h2>🎟️ Coupon Manager</h2>
+    <div class="coupon-hint-admin">
+      <label>Homepage coupon code<input type="text" id="couponHintCode" maxlength="50" placeholder="SHIPPING"></label>
+      <button type="button" class="coupon-toggle enabled" id="couponHintToggle" onclick="toggleCouponHint()">Hint On</button>
+      <button type="button" class="edit-btn" onclick="saveCouponHint()">Save Hint</button>
+    </div>
     <div class="faq-admin-form">
       <input type="hidden" id="couponEditId">
       <input type="text" id="couponCode" placeholder="Coupon code">
@@ -1279,6 +1288,8 @@ let isLoggedIn = false;
 let adminCredentials = null; // Base64 Basic auth token, set on login
 let flashSale = JSON.parse(localStorage.getItem('sh_flash_sale')) === true;
 let hasLoadedSharedFlashSale = false;
+let couponHintEnabled = JSON.parse(localStorage.getItem('sh_coupon_hint_enabled')) !== false;
+let couponHintCode = localStorage.getItem('sh_coupon_hint_code') || 'SHIPPING';
 try { localStorage.removeItem('sh_admin_hash'); } catch(e){}
 let pendingDeleteProductId = null;
 let itemRequests = JSON.parse(localStorage.getItem('sh_item_requests')) || [];
@@ -1353,6 +1364,33 @@ function applySharedFlashSale(enabled, announce){
   hasLoadedSharedFlashSale = true;
 }
 
+function updateCouponHintDisplay(){
+  const hint = document.getElementById('heroCouponHint');
+  const text = document.getElementById('heroCouponHintText');
+  if(hint) hint.hidden = !couponHintEnabled;
+  if(text) text.textContent = `Psst... Use coupon code ${couponHintCode}`;
+}
+
+function updateCouponHintControls(){
+  const input = document.getElementById('couponHintCode');
+  const toggle = document.getElementById('couponHintToggle');
+  if(input) input.value = couponHintCode;
+  if(toggle){
+    toggle.textContent = couponHintEnabled ? 'Hint On' : 'Hint Off';
+    toggle.classList.toggle('enabled', couponHintEnabled);
+    toggle.classList.toggle('disabled', !couponHintEnabled);
+  }
+}
+
+function applySharedCouponHint(enabled, code){
+  if(typeof enabled === 'boolean') couponHintEnabled = enabled;
+  if(typeof code === 'string' && code.trim()) couponHintCode = code.trim().toUpperCase();
+  localStorage.setItem('sh_coupon_hint_enabled', JSON.stringify(couponHintEnabled));
+  localStorage.setItem('sh_coupon_hint_code', couponHintCode);
+  updateCouponHintDisplay();
+  if(isLoggedIn) updateCouponHintControls();
+}
+
 function playFlashSaleFlyover(){
   const flyover = document.getElementById('flashSaleFlyover');
   if(!flyover) return;
@@ -1372,6 +1410,7 @@ async function fetchSharedCatalog(){
     if(Array.isArray(data.products)) applySharedProducts(data.products);
     if(Array.isArray(data.faqs)) applySharedFaqs(data.faqs);
     if(typeof data.flash_sale === 'boolean') applySharedFlashSale(data.flash_sale, true);
+    if(typeof data.coupon_hint_enabled === 'boolean' || typeof data.coupon_hint_code === 'string') applySharedCouponHint(data.coupon_hint_enabled, data.coupon_hint_code);
   } catch(e){ /* API unreachable — keep local catalog */ }
 }
 
@@ -1401,6 +1440,32 @@ async function persistFaqsToServer(){
 
 async function persistFlashSaleToServer(){
   return persistCatalogToServer({ flash_sale: flashSale });
+}
+
+async function persistCouponHintToServer(){
+  return persistCatalogToServer({ coupon_hint_enabled: couponHintEnabled, coupon_hint_code: couponHintCode });
+}
+
+async function saveCouponHint(){
+  const input = document.getElementById('couponHintCode');
+  const code = input ? input.value.trim().toUpperCase() : '';
+  if(!/^[A-Z0-9_-]{1,50}$/.test(code)){
+    showCartToast('Use 1–50 letters, numbers, hyphens, or underscores.');
+    return;
+  }
+  couponHintCode = code;
+  applySharedCouponHint(couponHintEnabled, couponHintCode);
+  const persist = await persistCouponHintToServer();
+  showCartToast(persist.ok ? 'Homepage coupon hint saved for everyone' : (persist.error || 'Hint saved on this device only'));
+}
+
+async function toggleCouponHint(){
+  couponHintEnabled = !couponHintEnabled;
+  applySharedCouponHint(couponHintEnabled, couponHintCode);
+  const persist = await persistCouponHintToServer();
+  showCartToast(persist.ok
+    ? (couponHintEnabled ? 'Homepage coupon hint is on for everyone' : 'Homepage coupon hint is off for everyone')
+    : (persist.error || 'Hint changed on this device only'));
 }
 
 function normalizeSharedCoupon(coupon){
@@ -2402,6 +2467,7 @@ function clearProductForm(){
 }
 
 function renderCouponAdmin(){
+  updateCouponHintControls();
   document.getElementById('couponTable').innerHTML = coupons.map(coupon => `
     <tr>
       <td><strong>${coupon.code}</strong></td>

@@ -90,7 +90,7 @@ async function supabaseRequest(key, method, body) {
   };
   if (method !== 'POST') url.searchParams.set('id', 'eq.1');
   if (method === 'GET') {
-    url.searchParams.set('select', 'products,faqs,flash_sale');
+    url.searchParams.set('select', 'products,faqs,flash_sale,coupon_hint_enabled,coupon_hint_code');
   } else {
     headers['Content-Type'] = 'application/json';
     headers.Prefer = 'return=representation';
@@ -117,24 +117,26 @@ module.exports = async (req, res) => {
 
   if (req.method === 'GET') {
     if (!supabaseUrl || !supabaseAnonKey) {
-      sendJson(res, 200, { products: null, faqs: null, flash_sale: null });
+      sendJson(res, 200, { products: null, faqs: null, flash_sale: null, coupon_hint_enabled: null, coupon_hint_code: null });
       return;
     }
     try {
       const result = await supabaseRequest(supabaseAnonKey, 'GET');
       if (!result.ok) {
-        sendJson(res, 200, { products: null, faqs: null, flash_sale: null });
+        sendJson(res, 200, { products: null, faqs: null, flash_sale: null, coupon_hint_enabled: null, coupon_hint_code: null });
         return;
       }
       const row = Array.isArray(result.data) && result.data[0] ? result.data[0] : {};
       sendJson(res, 200, {
         products: Array.isArray(row.products) ? row.products : null,
         faqs: Array.isArray(row.faqs) ? row.faqs : null,
-        flash_sale: typeof row.flash_sale === 'boolean' ? row.flash_sale : null
+        flash_sale: typeof row.flash_sale === 'boolean' ? row.flash_sale : null,
+        coupon_hint_enabled: typeof row.coupon_hint_enabled === 'boolean' ? row.coupon_hint_enabled : null,
+        coupon_hint_code: typeof row.coupon_hint_code === 'string' ? row.coupon_hint_code : null
       });
     } catch (error) {
       console.error('catalog GET failed:', error.message);
-      sendJson(res, 200, { products: null, faqs: null, flash_sale: null });
+      sendJson(res, 200, { products: null, faqs: null, flash_sale: null, coupon_hint_enabled: null, coupon_hint_code: null });
     }
     return;
   }
@@ -185,6 +187,21 @@ module.exports = async (req, res) => {
       }
       patch.flash_sale = body.flash_sale;
     }
+    if (Object.prototype.hasOwnProperty.call(body, 'coupon_hint_enabled')) {
+      if (typeof body.coupon_hint_enabled !== 'boolean') {
+        sendJson(res, 400, { error: 'Coupon hint must be on or off.' });
+        return;
+      }
+      patch.coupon_hint_enabled = body.coupon_hint_enabled;
+    }
+    if (Object.prototype.hasOwnProperty.call(body, 'coupon_hint_code')) {
+      const code = typeof body.coupon_hint_code === 'string' ? body.coupon_hint_code.trim().toUpperCase() : '';
+      if (!/^[A-Z0-9_-]{1,50}$/.test(code)) {
+        sendJson(res, 400, { error: 'Use a coupon code with 1–50 letters, numbers, hyphens, or underscores.' });
+        return;
+      }
+      patch.coupon_hint_code = code;
+    }
     if (!Object.keys(patch).length) {
       sendJson(res, 400, { error: 'Provide products or FAQs to save.' });
       return;
@@ -204,7 +221,9 @@ module.exports = async (req, res) => {
       sendJson(res, 200, {
         products: Array.isArray(row.products) ? row.products : (patch.products || null),
         faqs: Array.isArray(row.faqs) ? row.faqs : (patch.faqs || null),
-        flash_sale: typeof row.flash_sale === 'boolean' ? row.flash_sale : (Object.prototype.hasOwnProperty.call(patch, 'flash_sale') ? patch.flash_sale : null)
+        flash_sale: typeof row.flash_sale === 'boolean' ? row.flash_sale : (Object.prototype.hasOwnProperty.call(patch, 'flash_sale') ? patch.flash_sale : null),
+        coupon_hint_enabled: typeof row.coupon_hint_enabled === 'boolean' ? row.coupon_hint_enabled : (Object.prototype.hasOwnProperty.call(patch, 'coupon_hint_enabled') ? patch.coupon_hint_enabled : null),
+        coupon_hint_code: typeof row.coupon_hint_code === 'string' ? row.coupon_hint_code : (patch.coupon_hint_code || null)
       });
     } catch (error) {
       console.error('catalog PUT error:', error.message);
