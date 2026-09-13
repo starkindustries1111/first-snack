@@ -1291,10 +1291,83 @@ function saveState(){
   localStorage.setItem('sh_flash_sale', JSON.stringify(flashSale));
 }
 
+function adminHeaders(){
+  const headers = { 'Content-Type': 'application/json' };
+  if(adminCredentials) headers.Authorization = `Basic ${adminCredentials}`;
+  return headers;
+}
+
+function normalizeSharedProduct(item){
+  return {
+    id: Number(item.id),
+    name: String(item.name || ''),
+    category: item.category || 'Salty',
+    price: Number(item.price),
+    stock: Number(item.stock),
+    emoji: item.emoji || '🍿',
+    desc: item.desc || '',
+    image: item.image || ''
+  };
+}
+
+function applySharedProducts(list){
+  products = list.map(normalizeSharedProduct).filter(item => item.id && item.name);
+  cart = cart.filter(item => products.some(product => product.id === item.id));
+  saveState();
+  renderStore();
+  renderCart();
+  if(isLoggedIn) renderAdmin();
+}
+
+function applySharedFaqs(list){
+  faqs = list.map(item => ({
+    id: Number(item.id),
+    question: String(item.question || ''),
+    answer: String(item.answer || '')
+  })).filter(item => item.id && item.question && item.answer);
+  saveState();
+  renderFaq();
+  if(isLoggedIn) renderFaqAdmin();
+}
+
+async function fetchSharedCatalog(){
+  try {
+    const res = await fetch(apiUrl('/api/catalog'), { cache: 'no-store' });
+    if(!res.ok) return;
+    const data = await res.json();
+    if(Array.isArray(data.products)) applySharedProducts(data.products);
+    if(Array.isArray(data.faqs)) applySharedFaqs(data.faqs);
+  } catch(e){ /* API unreachable — keep local catalog */ }
+}
+
+async function persistCatalogToServer(payload){
+  if(!adminCredentials) return { ok: false, error: 'Please log in again to save this for everyone.' };
+  try {
+    const res = await fetch(apiUrl('/api/catalog'), {
+      method: 'PUT',
+      headers: adminHeaders(),
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok) return { ok: false, error: data.error || 'Could not save this for everyone.' };
+    return { ok: true, data };
+  } catch(e){
+    return { ok: false, error: 'Could not reach the catalog service. Saved on this device only.' };
+  }
+}
+
+async function persistProductsToServer(){
+  return persistCatalogToServer({ products });
+}
+
+async function persistFaqsToServer(){
+  return persistCatalogToServer({ faqs });
+}
+
 /* ============ SHOP OPEN / CLOSE ============ */
 let shopManualOverride = JSON.parse(localStorage.getItem('sh_shop_override')) || null; // null = auto, 'open' or 'closed'
 
-// Fetch the authoritative shop override from the backend on load
+// Fetch the authoritative shop override and catalog from the backend on load
 (async function fetchShopOverride(){
   try {
     const res = await fetch(apiUrl('/api/shop-status'), { cache: 'no-store' });
@@ -1306,6 +1379,7 @@ let shopManualOverride = JSON.parse(localStorage.getItem('sh_shop_override')) ||
     }
   } catch(e){ /* API unreachable — use localStorage fallback */ }
 })();
+fetchSharedCatalog();
 
 function getAbuDhabiNow(){
   // UTC+4
@@ -1394,6 +1468,7 @@ setInterval(async function(){
     }
   } catch(e){ /* API unreachable — keep current state */ }
   applyShopStatus();
+  fetchSharedCatalog();
 }, 60000);
 
 /* ============ STORE RENDER ============ */
@@ -1959,6 +2034,20 @@ async function tryLogin(){
       }
     } catch(e){}
 
+    adminCredentials = credentials;
+    try {
+      const catalogRes = await fetch(apiUrl('/api/catalog'), { cache: 'no-store' });
+      const catalogData = catalogRes.ok ? await catalogRes.json() : {};
+      const hasRemoteProducts = Array.isArray(catalogData.products);
+      const hasRemoteFaqs = Array.isArray(catalogData.faqs);
+      if(hasRemoteProducts) applySharedProducts(catalogData.products);
+      if(hasRemoteFaqs) applySharedFaqs(catalogData.faqs);
+      const payload = {};
+      if(!hasRemoteProducts) payload.products = products;
+      if(!hasRemoteFaqs) payload.faqs = faqs;
+      if(Object.keys(payload).length) await persistCatalogToServer(payload);
+    } catch(e){}
+
   } catch (error) {
     if(loginBtn){
       loginBtn.disabled = false;
@@ -2081,7 +2170,7 @@ function requestDeleteProduct(id){
   document.getElementById('deleteProductConfirm').classList.add('open');
 }
 
-function confirmDeleteProduct(){
+async function confirmDeleteProduct(){
   const product = products.find(item => item.id === pendingDeleteProductId);
   if(!product) return;
 
@@ -2093,8 +2182,11 @@ function confirmDeleteProduct(){
   renderStore();
   renderCart();
   renderAdmin();
-  document.getElementById('successTitle').textContent = 'Item deleted';
-  document.getElementById('successMessage').textContent = `${product.name} was removed from inventory.`;
+  const persist = await persistProductsToServer();
+  document.getElementById('successTitle').textContent = persist.ok ? 'Item deleted' : 'Item deleted on this device';
+  document.getElementById('successMessage').textContent = persist.ok
+    ? `${product.name} was removed from inventory for everyone.`
+    : `${product.name} was removed here, but other devices may still show it. ${persist.error || ''}`;
   document.getElementById('orderSuccess').classList.add('show');
 }
 
@@ -2167,7 +2259,12 @@ async function saveProduct(){
   clearProductForm();
   renderStore();
   renderAdmin();
-  showCartToast(existingProduct ? 'Item updated' : 'Item saved');
+  const persist = await persistProductsToServer();
+  if(persist.ok){
+    showCartToast(existingProduct ? 'Item updated for everyone' : 'Item saved for everyone');
+  } else {
+    showCartToast(persist.error || (existingProduct ? 'Item updated on this device only' : 'Item saved on this device only'));
+  }
 }
 
 function clearProductForm(){
@@ -2289,7 +2386,7 @@ function renderFaqAdmin(){
   `).join('') || '<tr><td colspan="3">No FAQs yet</td></tr>';
 }
 
-function saveFaq(){
+async function saveFaq(){
   const question = document.getElementById('faqQuestion').value.trim();
   const answer = document.getElementById('faqAnswer').value.trim();
   const editId = Number(document.getElementById('faqEditId').value);
@@ -2312,6 +2409,8 @@ function saveFaq(){
   document.getElementById('faqAnswer').value = '';
   renderFaqAdmin();
   renderFaq();
+  const persist = await persistFaqsToServer();
+  showCartToast(persist.ok ? 'FAQ saved for everyone' : (persist.error || 'FAQ saved on this device only'));
 }
 
 function editFaq(id){
@@ -2323,11 +2422,13 @@ function editFaq(id){
   document.getElementById('faqQuestion').focus();
 }
 
-function deleteFaq(id){
+async function deleteFaq(id){
   faqs = faqs.filter(faq => faq.id !== id);
   saveState();
   renderFaqAdmin();
   renderFaq();
+  const persist = await persistFaqsToServer();
+  if(!persist.ok) showCartToast(persist.error || 'FAQ removed on this device only');
 }
 
 function renderFaq(){

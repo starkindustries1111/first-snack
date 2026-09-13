@@ -28,7 +28,15 @@ CREATE POLICY "Allow service_role full access on orders"
   WITH CHECK (true);
 
 -- 3. ENABLE ROW LEVEL SECURITY (RLS) ON COUPONS TABLE
-ALTER TABLE IF EXISTS coupons ENABLE ROW LEVEL SECURITY;
+CREATE TABLE IF NOT EXISTS coupons (
+  id bigint PRIMARY KEY,
+  code text NOT NULL UNIQUE,
+  percent integer NOT NULL DEFAULT 0,
+  "waivesShipping" boolean NOT NULL DEFAULT false,
+  enabled boolean NOT NULL DEFAULT true
+);
+
+ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
 
 -- Allow anonymous users to READ ONLY active coupons
 DROP POLICY IF EXISTS "Allow public read active coupons" ON coupons;
@@ -48,10 +56,16 @@ CREATE POLICY "Allow service_role full access on coupons"
   WITH CHECK (true);
 
 -- 4. ENABLE ROW LEVEL SECURITY (RLS) ON SHOP_SETTINGS TABLE
+-- products and faqs JSON columns are the shared catalog used by the admin dashboard.
 CREATE TABLE IF NOT EXISTS shop_settings (
   id int PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-  manual_override text DEFAULT NULL
+  manual_override text DEFAULT NULL,
+  products jsonb DEFAULT NULL,
+  faqs jsonb DEFAULT NULL
 );
+
+ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS products jsonb DEFAULT NULL;
+ALTER TABLE shop_settings ADD COLUMN IF NOT EXISTS faqs jsonb DEFAULT NULL;
 
 INSERT INTO shop_settings (id, manual_override) VALUES (1, NULL)
   ON CONFLICT (id) DO NOTHING;
